@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Order" ADD COLUMN     "paymentMethod" TEXT NOT NULL DEFAULT 'QRIS',
+ADD COLUMN     "paymentReference" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "paymentStatus" TEXT NOT NULL DEFAULT 'WAITING_PAYMENT';

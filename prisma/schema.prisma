@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SELLER
+  BUYER
+  ADMIN
+}
+
+enum PickupMethod {
+  PICKUP
+  DROPOFF
+}
+
+enum OilStatus {
+  REQUESTED
+  SCHEDULED
+  PICKED
+  COMPLETED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+}
+
+model User {
+  id             String          @id @default(uuid())
+  name           String
+  email          String          @unique
+  password       String
+  role           Role
+  points         Int             @default(0)
+  createdAt      DateTime        @default(now())
+  oilSubmissions OilSubmission[]
+  orders         Order[]
+  cart           Cart?
+}
+
+model OilSubmission {
+  id            String       @id @default(uuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity      Float
+  location      String       @db.Text
+  pickupMethod  PickupMethod
+  schedule      DateTime
+  status        OilStatus    @default(REQUESTED)
+  priceEstimate Float
+  createdAt     DateTime     @default(now())
+}
+
+model Product {
+  id                String      @id @default(uuid())
+  name              String
+  category          String      @default("Signature")
+  aroma             String
+  description       String      @db.Text
+  price             Float
+  stock             Int
+  imageUrl          String
+  imageAlt          String      @default("")
+  rating            Float       @default(4.9)
+  leadTime          String      @default("Ready stock")
+  aromaOptions      String[]    @default([])
+  containerOptions  String[]    @default([])
+  decorationOptions String[]    @default([])
+  giftCardAvailable Boolean     @default(false)
+  customBuild       Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  orderItems        OrderItem[]
+  cartItems         CartItem[]
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalPrice       Float
+  paymentMethod    String      @default("QRIS")
+  paymentReference String      @default("")
+  paymentStatus    String      @default("WAITING_PAYMENT")
+  status           OrderStatus @default(PENDING)
+  createdAt        DateTime    @default(now())
+  items            OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+
+model Cart {
+  id     String     @id @default(uuid())
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  CartItem[]
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+
+  @@unique([cartId, productId])
+}
