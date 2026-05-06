@@ -5,14 +5,18 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
+  Clock3,
   Droplets,
   Factory,
   Flame,
+  Globe2,
   Leaf,
   Recycle,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AwarenessSection } from "@/components/awareness-section";
 import { ProductCard } from "@/components/product-card";
 import { SiteNav } from "@/components/site-nav";
 import { products, steps } from "@/lib/data";
@@ -152,6 +156,194 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* <section className="bg-[#fbf7ef] px-4 py-24">
+        <div className="mx-auto max-w-7xl text-center">
+          <p className="text-sm font-bold text-[#1f7a3b]">Your Dashboard</p>
+          <h2 className="mt-3 font-display text-5xl font-bold text-stone-950">Track Everything in One Place</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-stone-600">
+            Monitor orders, oil sales, rewards, and environmental impact from one personal command center.
+          </p>
+
+          <div className="mt-16 overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-2xl shadow-stone-900/10">
+            <div className="flex items-center justify-between border-b border-stone-200 bg-[#f4f8f2] px-6 py-5 text-left">
+              <div>
+                <p className="text-sm text-stone-600">Welcome back,</p>
+                <p className="font-semibold text-stone-950">Sarah</p>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#f4eadb] px-4 py-2 text-sm font-bold text-stone-950">
+                <Trophy size={16} className="text-[#d78b37]" />
+                750 Points
+              </div>
+            </div>
+            <div className="grid gap-6 p-6 text-left">
+              <div className="grid gap-4 md:grid-cols-4">
+                {[
+                  ["Total Spent", "Rp 456K", "+12% this month", TrendingUp, "text-[#1f7a3b]"],
+                  ["Oil Earnings", "Rp 125K", "+8% this month", TrendingUp, "text-[#d78b37]"],
+                  ["Oil Recycled", "15L", "Total contribution", TrendingUp, "text-[#1f7a3b]"],
+                  ["Carbon Saved", "45kg", "CO2 equivalent", TrendingUp, "text-emerald-500"],
+                ].map(([label, value, caption, Icon, tone]) => (
+                  <div key={label as string} className="rounded-2xl bg-[#f8f4ee] p-5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-stone-600">{label as string}</p>
+                      <Icon size={16} className={tone as string} />
+                    </div>
+                    <p className="mt-3 text-3xl font-bold text-stone-950">{value as string}</p>
+                    <p className={`mt-1 text-sm ${tone as string}`}>{caption as string}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-[1.05fr_1fr]">
+                <div className="rounded-2xl bg-[#f8f4ee] p-5">
+                  <h3 className="flex items-center gap-2 text-xl font-bold text-stone-950">
+                    <Clock3 size={18} />
+                    Recent Activity
+                  </h3>
+                  <div className="mt-5 grid gap-3">
+                    {[
+                      [Box, "Lavender Dreams", "Delivered", "+Rp 89.000", "text-[#1f7a3b]"],
+                      [Droplets, "Oil Pickup #234", "Completed", "+Rp 35.000", "text-[#d78b37]"],
+                      [Box, "Vanilla Comfort", "Shipping", "+Rp 99.000", "text-[#1f7a3b]"],
+                    ].map(([Icon, title, status, amount, tone]) => (
+                      <div key={title as string} className="flex items-center gap-4 rounded-2xl bg-white p-4">
+                        <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-[#1f7a3b]">
+                          <Icon size={20} className={tone as string} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-stone-950">{title as string}</p>
+                          <p className="text-sm text-stone-500">{status as string}</p>
+                        </div>
+                        <p className="font-bold text-stone-950">{amount as string}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-[#f8f4ee] p-5">
+                  <h3 className="flex items-center gap-2 text-xl font-bold text-stone-950">
+                    <Award size={18} className="text-[#d78b37]" />
+                    Rewards & Badges
+                  </h3>
+                  <div className="mt-5 grid gap-3">
+                    {[
+                      ["Eco Starter", "100 points required", "Earned"],
+                      ["Green Champion", "500 points required", "Earned"],
+                      ["Sustainability Hero", "1000 points required", ""],
+                    ].map(([title, points, status]) => (
+                      <div key={title} className="flex items-center gap-4 rounded-2xl bg-white p-4">
+                        <span className="grid h-11 w-11 place-items-center rounded-xl bg-amber-100 text-[#d78b37]">
+                          <CheckCircle2 size={19} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-stone-950">{title}</p>
+                          <p className="text-sm text-stone-500">{points}</p>
+                        </div>
+                        {status ? (
+                          <span className="rounded-full bg-[#fff7ed] px-3 py-1 text-xs font-medium text-[#d78b37]">{status}</span>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section> */}
+
+      <section className="relative overflow-hidden bg-stone-950 px-4 py-24 text-amber-50">
+        <div className="absolute inset-0 opacity-30">
+          <img
+            src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=85"
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-950/90 to-[#4f6f52]/80" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="grid gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <p className="inline-flex items-center gap-2 rounded-full border border-amber-100/25 bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-[0.22em] text-amber-200 backdrop-blur">
+                <Globe2 size={15} />
+                Wawasan lingkungan
+              </p>
+              <h2 className="mt-5 font-display text-5xl font-bold text-balance">
+                Kenali dampak jelantah sebelum masuk saluran air.
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-amber-50/80">
+                Minyak jelantah yang dibuang sembarangan bisa mencemari air, menyumbat pipa, dan menghilangkan nilai ekonomi yang seharusnya bisa kembali ke warga.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/sell-oil">
+                  <Button size="lg" variant="warm">
+                    Setor jelantah
+                    <ArrowRight size={18} />
+                  </Button>
+                </Link>
+                <Link href="/awareness">
+                  <Button size="lg" variant="secondary">
+                    Baca awareness
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                ["3 Juta", "Liter jelantah terbuang per hari", Droplets],
+                ["70%", "Berakhir di saluran air", Recycle],
+                ["15 Tahun", "Waktu degradasi di lingkungan", Clock3],
+                ["2.5x", "Emisi dari pembuangan tidak tepat", Factory],
+              ].map(([value, label, Icon]) => (
+                <motion.div
+                  key={value as string}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="rounded-lg border border-white/15 bg-white/10 p-5 shadow-lg shadow-stone-950/10 backdrop-blur-xl"
+                >
+                  <Icon className="text-[#d78b37]" size={24} />
+                  <p className="mt-6 font-display text-4xl font-bold">{value as string}</p>
+                  <p className="mt-2 text-sm leading-6 text-amber-50/75">{label as string}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-5 md:grid-cols-2">
+            {[
+              [Droplets, "Mencemari air tanah", "1 liter jelantah bisa mencemari air bersih dan merusak habitat mikro yang menjaga kualitas air.", "1 juta L", "potensi air tercemar"],
+              [Recycle, "Merusak ekosistem sungai", "Lapisan minyak menghalangi oksigen masuk ke air dan mengganggu kehidupan biota akuatik.", "40%", "risiko kerusakan sungai"],
+              [Trash2, "Menyumbat saluran air", "Minyak yang mengeras di pipa memperbesar risiko genangan, bau, dan biaya perbaikan lingkungan.", "Rp500 juta", "potensi biaya tahunan"],
+              [Factory, "Menghilangkan nilai bahan", "Jelantah yang dikelola dapat menjadi bahan bernilai untuk produk circular seperti candle aromatherapy.", "2x", "nilai dampak ekonomi"],
+            ].map(([Icon, title, body, value, label]) => (
+              <motion.div
+                key={title as string}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="rounded-lg border border-white/15 bg-[#fffaf0]/95 p-5 text-left text-stone-950 shadow-2xl shadow-stone-950/10"
+              >
+                <div className="flex gap-4">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-stone-950 text-amber-100">
+                    <Icon size={21} />
+                  </span>
+                  <div>
+                    <h3 className="font-display text-2xl font-bold">{title as string}</h3>
+                    <p className="mt-3 leading-7 text-stone-600">{body as string}</p>
+                    <div className="mt-4 rounded-lg bg-[#f9efe0] p-4">
+                      <p className="text-2xl font-bold text-[#9b5b24]">{value as string}</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">{label as string}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-[#f9efe0] px-4 py-24">
         <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-end">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
@@ -233,6 +425,12 @@ export default function Home() {
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f9efe0] px-4 py-24">
+        <div className="mx-auto max-w-7xl">
+          <AwarenessSection />
         </div>
       </section>
 

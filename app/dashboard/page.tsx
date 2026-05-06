@@ -1,14 +1,12 @@
 import Link from "next/link";
-import { CreditCard, Flame, Gift, Package, Truck, Wallet } from "lucide-react";
+import { CreditCard, Gift, Package, Truck, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { redirect } from "next/navigation";
-import { AwarenessSection } from "@/components/awareness-section";
 import { LogoutButton } from "@/components/logout-button";
 import { SiteNav } from "@/components/site-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
-import { productFromDb, productSalePrice } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
 
@@ -31,7 +29,7 @@ export default async function DashboardPage() {
     redirect("/admin");
   }
 
-  const [oilSubmissions, orders, productRows] = await Promise.all([
+  const [oilSubmissions, orders] = await Promise.all([
     prisma.oilSubmission.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -41,7 +39,6 @@ export default async function DashboardPage() {
       include: { items: { include: { product: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.product.findMany({ take: 4, orderBy: { createdAt: "desc" } }),
   ]);
 
   const earnings = oilSubmissions.reduce((sum, item) => sum + item.priceEstimate, 0);
@@ -54,7 +51,6 @@ export default async function DashboardPage() {
     { Icon: CreditCard, label: "Waiting payment", value: `${waitingPayments}`, rawValue: waitingPayments },
     { Icon: Gift, label: "Circular points", value: `${user.points}`, rawValue: user.points },
   ].filter((stat) => stat.rawValue > 0);
-  const products = productRows.map(productFromDb);
 
   return (
     <main className="min-h-screen px-4 pb-20 pt-32">
@@ -149,27 +145,6 @@ export default async function DashboardPage() {
               </Link>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="mt-10 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-          <Card>
-            <CardHeader>
-              <Flame className="text-[#d78b37]" />
-              <h2 className="font-display text-3xl font-bold">Recommended candles</h2>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              {products.map((product) => (
-                <Link key={product.id} href={`/marketplace/${product.id}`} className="flex gap-3 rounded-lg bg-white/70 p-3">
-                  <img src={product.imageUrl} alt={product.imageAlt} className="h-16 w-16 rounded-lg object-cover" />
-                  <div>
-                    <p className="font-semibold">{product.name}</p>
-                    <p className="text-sm text-stone-600">{formatCurrency(productSalePrice(product))}</p>
-                  </div>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
-          <AwarenessSection />
         </div>
       </section>
     </main>

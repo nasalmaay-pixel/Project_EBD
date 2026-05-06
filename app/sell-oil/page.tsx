@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, CheckCircle2, MapPin, Wallet } from "lucide-react";
+import { Camera, CalendarClock, CheckCircle2, ImageUp, MapPin, Sparkles, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SiteNav } from "@/components/site-nav";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,23 @@ import { estimateOilPrice, formatCurrency } from "@/lib/utils";
 
 export default function SellOilPage() {
   const [quantity, setQuantity] = useState(12);
+  const [preview, setPreview] = useState("");
+  const [aiEstimate, setAiEstimate] = useState<{
+    liters: number;
+    confidence: number;
+    note: string;
+    source: string;
+  } | null>(null);
+  const [aiError, setAiError] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<{
     location: string;
     quantity: number;
     estimate: number;
     points: number;
   } | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const estimate = useMemo(() => estimateOilPrice(quantity), [quantity]);
   const highlights: { Icon: LucideIcon; title: string; body: string }[] = [
     { Icon: MapPin, title: "Coverage", body: "Pickup or drop-off" },
@@ -46,6 +57,59 @@ export default function SellOilPage() {
       quantity: payload.quantity,
       estimate: estimateOilPrice(payload.quantity),
       points: result?.points ?? Math.max(Math.floor(payload.quantity), 1),
+    });
+  }
+
+  async function predictOil(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    setAiLoading(true);
+    setAiEstimate(null);
+    setAiError("");
+
+    const image = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    setPreview(image);
+
+    const response = await fetch("/api/ai/oil-estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, mimeType: file.type || "image/jpeg" }),
+    }).catch(() => null);
+    const result = await response?.json().catch(() => null) as {
+      liters?: number;
+      confidence?: number;
+      note?: string;
+      source?: string;
+      error?: string;
+      detail?: string;
+    } | null;
+
+    const liters = Number(result?.liters ?? 0);
+    setAiLoading(false);
+
+    if (!response?.ok || result?.error) {
+      setAiError(result?.detail ?? result?.error ?? "Gemini belum bisa memproses gambar.");
+      return;
+    }
+
+    if (!liters) {
+      setAiError("Gemini tidak mengembalikan angka liter. Coba foto yang lebih jelas.");
+      return;
+    }
+
+    setAiEstimate({
+      liters,
+      confidence: result?.confidence ?? 60,
+      note: result?.note ?? "Estimasi volume berhasil dibuat.",
+      source: result?.source ?? "gemini",
     });
   }
 
@@ -78,6 +142,83 @@ export default function SellOilPage() {
 
         <form action={submit} className="glass rounded-lg p-6">
           <div className="grid gap-5">
+            <div className="rounded-lg border border-white/70 bg-stone-950 p-5 text-amber-50 shadow-xl shadow-stone-900/10">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                <div>
+                  <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.22em] text-amber-200">
+                    <Sparkles size={16} />
+                    Gemini AI predictor
+                  </p>
+                  <h2 className="mt-2 font-display text-3xl font-bold">Prediksi liter dari foto.</h2>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" variant="secondary" onClick={() => uploadInputRef.current?.click()}>
+                    <ImageUp size={16} />
+                    Upload
+                  </Button>
+                  <Button type="button" variant="warm" onClick={() => cameraInputRef.current?.click()}>
+                    <Camera size={16} />
+                    Camera
+                  </Button>
+                </div>
+              </div>
+              <input
+                ref={uploadInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => predictOil(event.target.files?.[0] ?? null)}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(event) => predictOil(event.target.files?.[0] ?? null)}
+              />
+              <div className="mt-5 grid gap-4 md:grid-cols-[0.9fr_1.1fr]">
+                <div className="aspect-video overflow-hidden rounded-lg bg-white/10">
+                  {preview ? (
+                    <img src={preview} alt="Uploaded used cooking oil preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="grid h-full place-items-center px-5 text-center text-sm text-amber-50/70">
+                      Upload foto wadah minyak jelantah atau gunakan kamera.
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-lg bg-white/10 p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-200">AI output</p>
+                  {aiEstimate ? (
+                    <>
+                      <div className="mt-3 flex items-end gap-2">
+                        <p className="font-display text-6xl font-bold leading-none">{aiEstimate.liters}</p>
+                        <p className="pb-2 text-xl font-semibold">L</p>
+                      </div>
+                      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
+                        <div className="h-full rounded-full bg-[#d78b37]" style={{ width: `${aiEstimate.confidence}%` }} />
+                      </div>
+                      <p className="mt-2 text-xs text-amber-50/75">
+                        Confidence {aiEstimate.confidence}% / {aiEstimate.source === "gemini" ? "Gemini" : "Demo"}
+                      </p>
+                      <p className="mt-3 text-sm leading-6 text-amber-50/80">{aiEstimate.note}</p>
+                      <Button type="button" variant="secondary" className="mt-4 w-full" onClick={() => setQuantity(aiEstimate.liters)}>
+                        Use this estimate
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="mt-5 rounded-lg border border-dashed border-white/20 p-4 text-sm leading-6 text-amber-50/70">
+                      {aiLoading
+                        ? "Gemini sedang membaca gambar..."
+                        : aiError
+                          ? aiError
+                          : "Angka prediksi akan muncul di sini setelah foto diproses."}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <label className="space-y-2">
               <span className="text-sm font-semibold">Location</span>
               <Input name="location" placeholder="Jl. Kemang Raya, Jakarta Selatan" required />

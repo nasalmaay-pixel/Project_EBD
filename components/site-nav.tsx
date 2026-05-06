@@ -8,6 +8,7 @@ import {
   BookOpen,
   Flame,
   LayoutDashboard,
+  LogIn,
   Menu,
   MessageCircle,
   PackageCheck,
@@ -32,6 +33,11 @@ const links = [
 const CART_KEY = "candlex_cart";
 const CART_EVENT = "candlex-cart-change";
 const SUPPORT_URL = "https://wa.me/6285232696528?text=Halo%20CandleX%2C%20saya%20butuh%20bantuan.";
+
+type NavUser = {
+  name: string;
+  role: "SELLER" | "BUYER" | "ADMIN";
+};
 
 type ReminderProduct = {
   id: string;
@@ -71,6 +77,7 @@ export function SiteNav() {
   const [cartQuantity, setCartQuantity] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [remindersOpen, setRemindersOpen] = useState(false);
+  const [user, setUser] = useState<NavUser | null>(null);
   const hasCart = cartQuantity > 0;
 
   useEffect(() => {
@@ -86,9 +93,31 @@ export function SiteNav() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/auth/me")
+      .then((response) => response.json())
+      .then((result: { user?: NavUser | null }) => {
+        if (active) {
+          setUser(result.user ?? null);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setUser(null);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <header className="fixed left-0 right-0 top-0 z-50 px-4 pt-4">
-      <nav className="mx-auto max-w-7xl rounded-3xl border border-white/65 bg-[#fffaf0]/75 px-4 py-3 shadow-lg shadow-stone-900/5 backdrop-blur-xl md:rounded-full">
+      <div className="mx-auto flex max-w-7xl items-start gap-3">
+      <nav className="flex-1 rounded-3xl border border-white/65 bg-[#fffaf0]/75 px-4 py-3 shadow-lg shadow-stone-900/5 backdrop-blur-xl md:rounded-full">
         <div className="flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2 font-semibold text-stone-950">
           <span className="grid h-9 w-9 place-items-center rounded-full bg-stone-950 text-amber-100">
@@ -97,16 +126,20 @@ export function SiteNav() {
           <span>CandleX</span>
         </Link>
         <div className="hidden items-center gap-1 md:flex">
-          {links.map(({ label, href, Icon }) => (
+          {links.map(({ label, href, Icon }) => {
+            const targetHref = label === "Dashboard" && !user ? "/login?next=/dashboard" : href;
+
+            return (
             <Link
               key={href}
-              href={href}
+              href={targetHref}
               className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-white/70 hover:text-stone-950"
             >
               <Icon size={16} />
               {label}
             </Link>
-          ))}
+            );
+          })}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -161,7 +194,7 @@ export function SiteNav() {
             {links.map(({ label, href, Icon }) => (
               <Link
                 key={href}
-                href={href}
+                href={label === "Dashboard" && !user ? "/login?next=/dashboard" : href}
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-white/70 hover:text-stone-950"
               >
@@ -169,6 +202,25 @@ export function SiteNav() {
                 {label}
               </Link>
             ))}
+            {user ? (
+              <Link
+                href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 rounded-2xl bg-white/70 px-4 py-3 text-sm font-semibold text-stone-700"
+              >
+                <LogIn size={17} />
+                {user.name}
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 rounded-2xl bg-[#d78b37] px-4 py-3 text-sm font-semibold text-white"
+              >
+                <LogIn size={17} />
+                Login
+              </Link>
+            )}
             {hasCart ? (
               <Link
                 href="/checkout"
@@ -195,6 +247,25 @@ export function SiteNav() {
           </div>
         ) : null}
       </nav>
+      <div className="hidden shrink-0 md:flex">
+        {user ? (
+          <Link
+            href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+            className={cn(buttonVariants({ variant: "secondary", size: "default" }), "h-10 max-w-36 rounded-full border border-white/65 bg-[#fffaf0]/75 px-4 shadow-lg shadow-stone-900/5 backdrop-blur-xl")}
+          >
+            <span className="truncate">{user.name}</span>
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className={cn(buttonVariants({ variant: "warm", size: "default" }), "h-10 rounded-full px-4 shadow-lg shadow-amber-900/20")}
+          >
+            <LogIn size={16} />
+            Login
+          </Link>
+        )}
+      </div>
+      </div>
     </header>
   );
 }
@@ -260,18 +331,7 @@ function ReminderPanel({
 
   return (
     <div className="absolute right-4 top-[calc(100%+0.75rem)] w-[calc(100vw-2rem)] max-w-md rounded-3xl border border-white/70 bg-[#fffaf0]/95 p-4 shadow-2xl shadow-stone-950/15 backdrop-blur-xl">
-      <div className="flex justify-end">
-        <button
-          type="button"
-          aria-label="Close reminders"
-          onClick={onClose}
-          className="grid h-9 w-9 place-items-center rounded-full bg-white/80 text-stone-700 transition hover:bg-white"
-        >
-          <X size={16} />
-        </button>
-      </div>
-
-      <div className="mt-4 grid max-h-[70vh] gap-3 overflow-y-auto pr-1">
+      <div className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1">
         {cartQuantity > 0 ? (
           <ReminderLink href="/checkout" onClose={onClose} Icon={ShoppingBag} title="Cart belum checkout">
             {cartQuantity} item sedang menunggu pembayaran.
