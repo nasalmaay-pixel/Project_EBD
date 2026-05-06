@@ -29,7 +29,7 @@ const fadeUp = {
 const heroSlides = [
   {
     image:
-      "https://images.unsplash.com/photo-1602526432604-029a709e131c?auto=format&fit=crop&w=1800&q=88",
+      "https://images.unsplash.com/photo-1760080938416-2edc02bd8bda?auto=format&fit=crop&w=1800&q=88",
     label: "Jelantah Pay",
     title: "From Waste to Glow",
     body:
