@@ -1,3 +1,4 @@
+import { CustomerTestimonials } from "@/components/customer-testimonials";
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { SiteNav } from "@/components/site-nav";
 import { productCategories, productFromDb } from "@/lib/data";
@@ -30,6 +31,7 @@ export default async function MarketplacePage() {
           </p>
         </div>
         <MarketplaceBrowser categories={productCategories} products={products} />
+        <CustomerTestimonials className="mt-16" />
       </section>
     </main>
   );

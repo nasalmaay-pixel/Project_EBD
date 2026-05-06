@@ -317,3 +317,27 @@ export const awarenessArticles = [
       "Dummy coverage: refined used cooking oil can become part of a small-batch candle supply story for mindful gifts.",
   },
 ];
+
+export const customerTestimonials = [
+  {
+    name: "Nadya Prameswari",
+    role: "Pembeli Aurora Vanilla",
+    rating: 5,
+    comment:
+      "Aromanya warm dan lembut, tidak bikin pusing. Dipakai malam hari bikin kamar terasa lebih tenang dan premium.",
+  },
+  {
+    name: "Raka Mahendra",
+    role: "Pembeli Citrus Market",
+    rating: 4.9,
+    comment:
+      "Wangi lemongrass-nya segar banget untuk ruang kerja. Packaging rapi, lilinnya juga tahan lama.",
+  },
+  {
+    name: "Alya Putri",
+    role: "Pembeli Gift Set",
+    rating: 5,
+    comment:
+      "Saya beli untuk hadiah, tampilannya cantik dan aromanya elegan. Cerita circular material-nya bikin produknya terasa lebih bermakna.",
+  },
+];

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AwarenessSection } from "@/components/awareness-section";
+import { CustomerTestimonials } from "@/components/customer-testimonials";
 import { ProductCard } from "@/components/product-card";
 import { SiteNav } from "@/components/site-nav";
 import { products, steps } from "@/lib/data";
@@ -427,6 +428,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <CustomerTestimonials className="bg-[#fffaf0] px-4 py-24" />
 
       <section className="bg-[#f9efe0] px-4 py-24">
         <div className="mx-auto max-w-7xl">
