@@ -11,7 +11,7 @@ export default function AwarenessPage() {
           Learn the small habits behind better candle use.
         </h1>
         <p className="mt-6 max-w-2xl leading-7 text-stone-600">
-          This is a dummy education feed for candle care, container reuse, and circular product awareness.
+          Baca panduan ringkas tentang candle care, reuse container, dan dampak circular product terhadap lingkungan.
         </p>
         <div className="mt-10">
           <AwarenessSection />

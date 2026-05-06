@@ -10,7 +10,7 @@ export function AwarenessSection() {
           <h2 className="mt-3 font-display text-4xl font-bold">Candle care and circular living.</h2>
         </div>
         <p className="max-w-md text-sm leading-6 text-stone-600">
-          Dummy news feed for now. Later this section can be wired to a real news API or editorial CMS.
+          Artikel singkat tentang perawatan lilin, reuse container, dan dampak limbah jelantah pada lingkungan.
         </p>
       </div>
 

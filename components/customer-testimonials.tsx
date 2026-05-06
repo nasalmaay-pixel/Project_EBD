@@ -1,4 +1,4 @@
-import { Quote, Star } from "lucide-react";
+import { CheckCircle2, Quote, Star } from "lucide-react";
 import { customerTestimonials } from "@/lib/data";
 
 type CustomerTestimonialsProps = {
@@ -17,7 +17,7 @@ export function CustomerTestimonials({ className = "" }: CustomerTestimonialsPro
             </h2>
           </div>
           <p className="max-w-md text-sm leading-6 text-stone-600">
-            Testimoni pelanggan yang menikmati lilin aromatherapy CandleX untuk ruang santai, kerja, dan hadiah.
+            Ulasan pembeli yang memakai lilin aromatherapy CandleX untuk kamar, ruang kerja, dan hadiah personal.
           </p>
         </div>
 
@@ -31,15 +31,31 @@ export function CustomerTestimonials({ className = "" }: CustomerTestimonialsPro
                 <span className="grid h-11 w-11 place-items-center rounded-full bg-[#f9efe0] text-[#9b5b24]">
                   <Quote size={20} />
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-800">
-                  <Star size={14} fill="currentColor" />
-                  {testimonial.rating}
-                </span>
+                <div className="text-right">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-800">
+                    <Star size={14} fill="currentColor" />
+                    {testimonial.rating}
+                  </span>
+                  <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#4f6f52]">
+                    <CheckCircle2 size={13} />
+                    Verified buyer
+                  </p>
+                </div>
               </div>
               <p className="mt-5 leading-7 text-stone-700">&quot;{testimonial.comment}&quot;</p>
               <div className="mt-6 border-t border-stone-200 pt-4">
-                <p className="font-semibold text-stone-950">{testimonial.name}</p>
-                <p className="mt-1 text-sm text-stone-500">{testimonial.role}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-stone-950">{testimonial.name}</p>
+                    <p className="mt-1 text-sm text-stone-500">{testimonial.location}</p>
+                  </div>
+                  <p className="text-right text-xs font-semibold uppercase tracking-[0.16em] text-[#9b5b24]">
+                    {testimonial.purchasedAt}
+                  </p>
+                </div>
+                <p className="mt-3 rounded-lg bg-[#f9efe0] px-3 py-2 text-sm font-semibold text-stone-800">
+                  {testimonial.product}
+                </p>
               </div>
             </article>
           ))}

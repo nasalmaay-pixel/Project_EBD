@@ -61,7 +61,7 @@ export default async function DashboardPage() {
             <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#9b5b24]">Customer dashboard</p>
             <h1 className="mt-4 font-display text-6xl font-bold">Welcome, {user.name}.</h1>
             <p className="mt-4 max-w-2xl leading-7 text-stone-600">
-              Track your candle orders, dummy payment status, oil pickup requests, and circular-living updates.
+              Track your candle orders, payment status, oil pickup requests, and circular-living updates.
             </p>
           </div>
           <LogoutButton />

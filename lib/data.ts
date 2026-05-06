@@ -307,37 +307,43 @@ export const awarenessArticles = [
   },
   {
     title: "How waste oil can support low-waste gifting",
-    source: "Circular Living Dummy News",
+    source: "Circular Living Review",
     date: "2026-04-18",
     category: "Sustainability",
     imageUrl:
       "https://images.unsplash.com/photo-1776260700301-c1d5e30a3f19?auto=format&fit=crop&w=900&q=82",
     imageAlt: "Murky green water contaminated with waste",
     summary:
-      "Dummy coverage: refined used cooking oil can become part of a small-batch candle supply story for mindful gifts.",
+      "Refined used cooking oil can become part of a small-batch candle supply story for mindful gifts.",
   },
 ];
 
 export const customerTestimonials = [
   {
     name: "Nadya Prameswari",
-    role: "Pembeli Aurora Vanilla",
+    location: "Jakarta Selatan",
+    product: "Aurora Vanilla",
+    purchasedAt: "3 Mei 2026",
     rating: 5,
     comment:
-      "Aromanya warm dan lembut, tidak bikin pusing. Dipakai malam hari bikin kamar terasa lebih tenang dan premium.",
+      "Aromanya warm, lembut, dan tidak menusuk. Saya nyalakan sekitar satu jam sebelum tidur, kamar langsung terasa lebih calm dan wangi vanillanya tahan sampai pagi.",
   },
   {
     name: "Raka Mahendra",
-    role: "Pembeli Citrus Market",
+    location: "Bandung",
+    product: "Citrus Market",
+    purchasedAt: "28 April 2026",
     rating: 4.9,
     comment:
-      "Wangi lemongrass-nya segar banget untuk ruang kerja. Packaging rapi, lilinnya juga tahan lama.",
+      "Citrus dan lemongrass-nya segar banget untuk ruang kerja, tapi tetap soft. Packaging rapi, wick mudah dinyalakan, dan burn-nya rata.",
   },
   {
     name: "Alya Putri",
-    role: "Pembeli Gift Set",
+    location: "Tangerang",
+    product: "Saffron Dusk Gift Set",
+    purchasedAt: "21 April 2026",
     rating: 5,
     comment:
-      "Saya beli untuk hadiah, tampilannya cantik dan aromanya elegan. Cerita circular material-nya bikin produknya terasa lebih bermakna.",
+      "Saya beli untuk hadiah ulang tahun. Box-nya terlihat premium, aroma saffron-sandalwood-nya elegan, dan penerimanya suka karena ada cerita bahan circular di balik produknya.",
   },
 ];

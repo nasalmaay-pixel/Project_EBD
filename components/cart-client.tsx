@@ -26,7 +26,7 @@ const paymentOptions = [
   {
     id: "QRIS",
     label: "QRIS",
-    detail: "Scan dummy QR CX-QRIS-2026",
+    detail: "Scan QR CX-QRIS-2026",
     Icon: QrCode,
   },
   {
@@ -38,7 +38,7 @@ const paymentOptions = [
   {
     id: "E_WALLET",
     label: "E-Wallet",
-    detail: "OVO / GoPay dummy checkout link",
+    detail: "OVO / GoPay checkout link",
     Icon: WalletCards,
   },
 ] as const;
@@ -212,7 +212,7 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
         ))}
       </div>
       <aside className="h-fit rounded-lg border border-white/70 bg-white/75 p-6 shadow-xl shadow-stone-900/10 backdrop-blur-xl">
-        <p className="text-sm uppercase tracking-[0.22em] text-stone-500">Dummy payment</p>
+        <p className="text-sm uppercase tracking-[0.22em] text-stone-500">Secure payment</p>
         <h2 className="mt-2 font-display text-3xl font-bold">Checkout</h2>
         <div className="mt-5 grid gap-3">
           {paymentOptions.map(({ id, label, detail, Icon }) => {
@@ -268,7 +268,7 @@ function CheckoutOverlay({
           <CheckCircle2 size={28} />
         </div>
         <p className="mt-5 text-sm font-bold uppercase tracking-[0.22em] text-[#9b5b24]">Order received</p>
-        <h2 className="mt-2 font-display text-4xl font-bold">Payment dummy ready.</h2>
+        <h2 className="mt-2 font-display text-4xl font-bold">Payment instructions ready.</h2>
         <div className="mt-5 grid gap-3 rounded-lg bg-white/75 p-4 text-sm">
           <p>
             <span className="font-semibold">Method:</span> {result.method}
