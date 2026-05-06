@@ -262,7 +262,7 @@ export const oilSubmissions = [
     quantity: 18,
     pickupMethod: "PICKUP",
     schedule: "2026-05-08T09:00:00.000Z",
-    status: "SCHEDULED",
+    status: "PAID",
     priceEstimate: 101088,
   },
   {
@@ -270,7 +270,7 @@ export const oilSubmissions = [
     quantity: 7,
     pickupMethod: "DROPOFF",
     schedule: "2026-05-10T13:00:00.000Z",
-    status: "REQUESTED",
+    status: "PENDING",
     priceEstimate: 36400,
   },
 ];

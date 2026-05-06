@@ -17,7 +17,7 @@ type AdminOrder = {
   user: { name: string };
 };
 
-const orderStatuses = ["PENDING", "PAID", "SHIPPED", "COMPLETED"] as const;
+const orderStatuses = ["PENDING", "SHIPPED", "COMPLETED"] as const;
 
 export function AdminOrderManager({ orders }: { orders: AdminOrder[] }) {
   const router = useRouter();

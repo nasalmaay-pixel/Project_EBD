@@ -67,7 +67,7 @@ async function main() {
         location: "Kemang, Jakarta Selatan",
         pickupMethod: "PICKUP",
         schedule: new Date("2026-05-08T09:00:00.000Z"),
-        status: "SCHEDULED",
+        status: "PAID",
         priceEstimate: 101088,
       },
       {
@@ -76,7 +76,7 @@ async function main() {
         location: "Cihampelas, Bandung",
         pickupMethod: "DROPOFF",
         schedule: new Date("2026-05-10T13:00:00.000Z"),
-        status: "REQUESTED",
+        status: "PENDING",
         priceEstimate: 36400,
       },
     ],

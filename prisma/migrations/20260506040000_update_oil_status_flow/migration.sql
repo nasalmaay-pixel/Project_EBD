@@ -1,0 +1,22 @@
+CREATE TYPE "OilStatus_new" AS ENUM ('PENDING', 'PAID', 'ALREADY_PICK_UP');
+
+ALTER TABLE "OilSubmission" ALTER COLUMN "status" DROP DEFAULT;
+
+ALTER TABLE "OilSubmission"
+ALTER COLUMN "status" TYPE "OilStatus_new"
+USING (
+  CASE "status"::text
+    WHEN 'REQUESTED' THEN 'PENDING'
+    WHEN 'SCHEDULED' THEN 'PAID'
+    WHEN 'PICKED' THEN 'ALREADY_PICK_UP'
+    WHEN 'COMPLETED' THEN 'ALREADY_PICK_UP'
+    ELSE 'PENDING'
+  END
+)::"OilStatus_new";
+
+ALTER TYPE "OilStatus" RENAME TO "OilStatus_old";
+ALTER TYPE "OilStatus_new" RENAME TO "OilStatus";
+
+ALTER TABLE "OilSubmission" ALTER COLUMN "status" SET DEFAULT 'PENDING';
+
+DROP TYPE "OilStatus_old";

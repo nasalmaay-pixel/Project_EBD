@@ -1,6 +1,7 @@
 import { Boxes, CalendarDays, ClipboardList, CreditCard, LineChart, PackageCheck, Users, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { redirect } from "next/navigation";
+import { AdminOilManager } from "@/components/admin-oil-manager";
 import { AdminOrderManager } from "@/components/admin-order-manager";
 import { AdminProductManager } from "@/components/admin-product-manager";
 import { LogoutButton } from "@/components/logout-button";
@@ -191,18 +192,8 @@ export default async function AdminPage() {
             <CardHeader>
               <h2 className="font-display text-3xl font-bold">Manage oil</h2>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {oilSubmissions.length ? oilSubmissions.map((item) => (
-                <div key={item.location} className="rounded-lg bg-white/70 p-4">
-                  <div className="flex justify-between">
-                    <p className="font-semibold">{item.quantity} L</p>
-                    <span className="text-xs font-bold text-[#9b5b24]">{item.status}</span>
-                  </div>
-                  <p className="text-sm text-stone-600">{item.location}</p>
-                </div>
-              )) : (
-                <p className="rounded-lg bg-white/70 p-4 text-sm text-stone-600">Belum ada submission minyak.</p>
-              )}
+            <CardContent>
+              <AdminOilManager submissions={oilSubmissions} />
             </CardContent>
           </Card>
         </div>

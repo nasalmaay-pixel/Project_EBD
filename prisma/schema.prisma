@@ -18,10 +18,9 @@ enum PickupMethod {
 }
 
 enum OilStatus {
-  REQUESTED
-  SCHEDULED
-  PICKED
-  COMPLETED
+  PENDING
+  PAID
+  ALREADY_PICK_UP
 }
 
 enum OrderStatus {
@@ -52,7 +51,7 @@ model OilSubmission {
   location      String       @db.Text
   pickupMethod  PickupMethod
   schedule      DateTime
-  status        OilStatus    @default(REQUESTED)
+  status        OilStatus    @default(PENDING)
   priceEstimate Float
   createdAt     DateTime     @default(now())
 }

@@ -99,7 +99,7 @@ export async function PATCH(request: Request) {
   const parsed = z
     .object({
       id: z.string(),
-      status: z.enum(["PENDING", "PAID", "SHIPPED", "COMPLETED"]),
+      status: z.enum(["PENDING", "SHIPPED", "COMPLETED"]),
     })
     .safeParse(await request.json());
 

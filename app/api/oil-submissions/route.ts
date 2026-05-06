@@ -71,7 +71,7 @@ export async function PATCH(request: Request) {
   const parsed = z
     .object({
       id: z.string(),
-      status: z.enum(["REQUESTED", "SCHEDULED", "PICKED", "COMPLETED"]),
+      status: z.enum(["PENDING", "PAID", "ALREADY_PICK_UP"]),
     })
     .safeParse(await request.json());
 

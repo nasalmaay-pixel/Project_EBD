@@ -294,7 +294,7 @@ function PickupOverlay({
             <span className="font-semibold">Points earned:</span> {result.points}
           </p>
           <p>
-            <span className="font-semibold">Status:</span> REQUESTED
+            <span className="font-semibold">Status:</span> PENDING
           </p>
         </div>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
