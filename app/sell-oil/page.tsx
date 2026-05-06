@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, MapPin, Wallet } from "lucide-react";
+import Link from "next/link";
+import { CalendarClock, CheckCircle2, MapPin, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SiteNav } from "@/components/site-nav";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,12 @@ import { estimateOilPrice, formatCurrency } from "@/lib/utils";
 
 export default function SellOilPage() {
   const [quantity, setQuantity] = useState(12);
+  const [submissionResult, setSubmissionResult] = useState<{
+    location: string;
+    quantity: number;
+    estimate: number;
+    points: number;
+  } | null>(null);
   const estimate = useMemo(() => estimateOilPrice(quantity), [quantity]);
   const highlights: { Icon: LucideIcon; title: string; body: string }[] = [
     { Icon: MapPin, title: "Coverage", body: "Pickup or drop-off" },
@@ -27,13 +34,19 @@ export default function SellOilPage() {
       schedule: formData.get("schedule"),
     };
 
-    await fetch("/api/oil-submissions", {
+    const response = await fetch("/api/oil-submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     }).catch(() => null);
 
-    alert("Oil submission requested. Tracking starts at REQUESTED.");
+    const result = await response?.json().catch(() => null) as { points?: number } | null;
+    setSubmissionResult({
+      location: String(payload.location ?? ""),
+      quantity: payload.quantity,
+      estimate: estimateOilPrice(payload.quantity),
+      points: result?.points ?? Math.max(Math.floor(payload.quantity), 1),
+    });
   }
 
   return (
@@ -41,7 +54,7 @@ export default function SellOilPage() {
       <SiteNav />
       <section className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#9b5b24]">Sell used oil</p>
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#9b5b24]">Jelantah Pay</p>
           <h1 className="mt-4 font-display text-6xl font-bold leading-none text-balance">
             Turn jelantah into tracked earnings.
           </h1>
@@ -104,6 +117,56 @@ export default function SellOilPage() {
           </div>
         </form>
       </section>
+      {submissionResult ? (
+        <PickupOverlay result={submissionResult} onClose={() => setSubmissionResult(null)} />
+      ) : null}
     </main>
+  );
+}
+
+function PickupOverlay({
+  result,
+  onClose,
+}: {
+  result: { location: string; quantity: number; estimate: number; points: number };
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[80] grid place-items-center bg-stone-950/55 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-lg bg-[#fffaf0] p-6 shadow-2xl shadow-stone-950/30">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#4f6f52] text-white">
+          <CheckCircle2 size={28} />
+        </div>
+        <p className="mt-5 text-sm font-bold uppercase tracking-[0.22em] text-[#9b5b24]">Pickup requested</p>
+        <h2 className="mt-2 font-display text-4xl font-bold">Jelantah Pay is tracking it.</h2>
+        <div className="mt-5 grid gap-3 rounded-lg bg-white/75 p-4 text-sm">
+          <p>
+            <span className="font-semibold">Location:</span> {result.location}
+          </p>
+          <p>
+            <span className="font-semibold">Volume:</span> {result.quantity} L
+          </p>
+          <p>
+            <span className="font-semibold">Estimate:</span> {formatCurrency(result.estimate)}
+          </p>
+          <p>
+            <span className="font-semibold">Points earned:</span> {result.points}
+          </p>
+          <p>
+            <span className="font-semibold">Status:</span> REQUESTED
+          </p>
+        </div>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <Link href="/dashboard" className="flex-1">
+            <Button variant="warm" className="w-full">
+              View dashboard
+            </Button>
+          </Link>
+          <Button variant="secondary" className="flex-1" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

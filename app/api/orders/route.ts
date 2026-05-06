@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { jsonError } from "@/lib/api";
+import { productSalePrice } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 
 const checkoutSchema = z.object({
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
 
   const totalPrice = parsed.data.items.reduce((total, item) => {
     const product = products.find((candidate) => candidate.id === item.productId);
-    return total + (product?.price ?? 0) * item.quantity;
+    return total + (product ? productSalePrice(product) : 0) * item.quantity;
   }, 0);
   const paymentReference = `CX-${parsed.data.paymentMethod}-${Date.now()}`;
   const earnedPoints = Math.max(Math.floor(totalPrice / 10000), 1);
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
             return {
               productId: item.productId,
               quantity: item.quantity,
-              price: product?.price ?? 0,
+              price: product ? productSalePrice(product) : 0,
             };
           }),
         },

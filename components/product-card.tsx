@@ -4,14 +4,20 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Gift, Palette, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProductSeed } from "@/lib/data";
+import { ProductSeed, productHasPromo, productSalePrice } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
 type ProductCardProps = {
   product: ProductSeed;
 };
 
+const CART_KEY = "candlex_cart";
+const CART_EVENT = "candlex-cart-change";
+
 export function ProductCard({ product }: ProductCardProps) {
+  const hasPromo = productHasPromo(product);
+  const salePrice = productSalePrice(product);
+
   return (
     <motion.article
       whileHover={{ y: -8 }}
@@ -26,6 +32,11 @@ export function ProductCard({ product }: ProductCardProps) {
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           />
           <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+            {hasPromo ? (
+              <span className="rounded-full bg-[#d78b37] px-3 py-1 text-xs font-bold text-white shadow-sm">
+                {product.promoLabel || "Promo"} -{product.promoDiscount}%
+              </span>
+            ) : null}
             <span className="rounded-full bg-white/85 px-3 py-1 text-xs font-bold text-stone-900 shadow-sm backdrop-blur">
               {product.category}
             </span>
@@ -68,11 +79,16 @@ export function ProductCard({ product }: ProductCardProps) {
           ) : null}
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="font-semibold text-stone-950">{formatCurrency(product.price)}</span>
+          <span className="grid gap-0.5 font-semibold text-stone-950">
+            <span>{formatCurrency(salePrice)}</span>
+            {hasPromo ? (
+              <span className="text-xs font-medium text-stone-500 line-through">{formatCurrency(product.price)}</span>
+            ) : null}
+          </span>
           <Button
             variant="warm"
             onClick={() => {
-              const raw = localStorage.getItem("candlex_cart") ?? "[]";
+              const raw = localStorage.getItem(CART_KEY) ?? "[]";
               const items = JSON.parse(raw) as {
                 id?: string;
                 productId: string;
@@ -93,7 +109,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 },
               ];
 
-              localStorage.setItem("candlex_cart", JSON.stringify(next));
+              localStorage.setItem(CART_KEY, JSON.stringify(next));
+              window.dispatchEvent(new Event(CART_EVENT));
             }}
           >
             Add to cart

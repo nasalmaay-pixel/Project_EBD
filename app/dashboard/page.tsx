@@ -8,7 +8,7 @@ import { SiteNav } from "@/components/site-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
-import { productFromDb } from "@/lib/data";
+import { productFromDb, productSalePrice } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
 
@@ -47,13 +47,13 @@ export default async function DashboardPage() {
   const earnings = oilSubmissions.reduce((sum, item) => sum + item.priceEstimate, 0);
   const orderSpend = orders.reduce((sum, order) => sum + order.totalPrice, 0);
   const waitingPayments = orders.filter((order) => order.paymentStatus === "WAITING_PAYMENT").length;
-  const stats: { Icon: LucideIcon; label: string; value: string }[] = [
-    { Icon: Wallet, label: "Oil earnings", value: formatCurrency(earnings) },
-    { Icon: Truck, label: "Active pickups", value: `${oilSubmissions.length}` },
-    { Icon: Package, label: "Buyer orders", value: `${orders.length}` },
-    { Icon: CreditCard, label: "Waiting payment", value: `${waitingPayments}` },
-    { Icon: Gift, label: "Candle points", value: `${user.points}` },
-  ];
+  const stats: { Icon: LucideIcon; label: string; value: string; rawValue: number }[] = [
+    { Icon: Wallet, label: "Oil earnings", value: formatCurrency(earnings), rawValue: earnings },
+    { Icon: Truck, label: "Active pickups", value: `${oilSubmissions.length}`, rawValue: oilSubmissions.length },
+    { Icon: Package, label: "Buyer orders", value: `${orders.length}`, rawValue: orders.length },
+    { Icon: CreditCard, label: "Waiting payment", value: `${waitingPayments}`, rawValue: waitingPayments },
+    { Icon: Gift, label: "Circular points", value: `${user.points}`, rawValue: user.points },
+  ].filter((stat) => stat.rawValue > 0);
   const products = productRows.map(productFromDb);
 
   return (
@@ -71,6 +71,7 @@ export default async function DashboardPage() {
           <LogoutButton />
         </div>
 
+        {stats.length ? (
         <div className="mt-10 grid gap-4 md:grid-cols-5">
           {stats.map(({ Icon, label, value }) => (
             <Card key={label}>
@@ -84,12 +85,15 @@ export default async function DashboardPage() {
             </Card>
           ))}
         </div>
+        ) : null}
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <Card>
             <CardHeader>
               <h2 className="font-display text-3xl font-bold">Order and payment</h2>
-              <p className="text-sm text-stone-600">Total spend: {formatCurrency(orderSpend)}</p>
+              {orderSpend > 0 ? (
+                <p className="text-sm text-stone-600">Total spend: {formatCurrency(orderSpend)}</p>
+              ) : null}
             </CardHeader>
             <CardContent className="space-y-3">
               {orders.length ? orders.map((order) => (
@@ -159,7 +163,7 @@ export default async function DashboardPage() {
                   <img src={product.imageUrl} alt={product.imageAlt} className="h-16 w-16 rounded-lg object-cover" />
                   <div>
                     <p className="font-semibold">{product.name}</p>
-                    <p className="text-sm text-stone-600">{formatCurrency(product.price)}</p>
+                    <p className="text-sm text-stone-600">{formatCurrency(productSalePrice(product))}</p>
                   </div>
                 </Link>
               ))}

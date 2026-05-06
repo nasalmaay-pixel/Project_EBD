@@ -40,18 +40,25 @@ export async function POST(request: Request) {
     return jsonError("Invalid oil submission payload", 422);
   }
 
-  const submission = await prisma.oilSubmission.create({
-    data: {
-      userId: user.id,
-      quantity: parsed.data.quantity,
-      location: parsed.data.location,
-      pickupMethod: parsed.data.pickupMethod,
-      schedule: new Date(parsed.data.schedule),
-      priceEstimate: estimateOilPrice(parsed.data.quantity),
-    },
-  });
+  const earnedPoints = Math.max(Math.floor(parsed.data.quantity), 1);
+  const [submission] = await prisma.$transaction([
+    prisma.oilSubmission.create({
+      data: {
+        userId: user.id,
+        quantity: parsed.data.quantity,
+        location: parsed.data.location,
+        pickupMethod: parsed.data.pickupMethod,
+        schedule: new Date(parsed.data.schedule),
+        priceEstimate: estimateOilPrice(parsed.data.quantity),
+      },
+    }),
+    prisma.user.update({
+      where: { id: user.id },
+      data: { points: { increment: earnedPoints } },
+    }),
+  ]);
 
-  return NextResponse.json({ submission }, { status: 201 });
+  return NextResponse.json({ submission, points: earnedPoints }, { status: 201 });
 }
 
 export async function PATCH(request: Request) {

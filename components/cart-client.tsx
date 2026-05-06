@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Building2, CheckCircle2, Minus, Plus, QrCode, Trash2, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProductSeed } from "@/lib/data";
+import { ProductSeed, productHasPromo, productSalePrice } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
 type CartItem = {
@@ -21,6 +21,7 @@ type CartItem = {
 };
 
 const CART_KEY = "candlex_cart";
+const CART_EVENT = "candlex-cart-change";
 const paymentOptions = [
   {
     id: "QRIS",
@@ -65,6 +66,7 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
+    window.dispatchEvent(new Event(CART_EVENT));
   }, [items]);
 
   const lines = useMemo(
@@ -76,11 +78,11 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
           product: products.find((product) => product.id === item.productId),
         }))
         .filter((item) => item.product),
-    [items],
+    [items, products],
   );
 
   const total = lines.reduce(
-    (sum, item) => sum + (item.product?.price ?? 0) * item.quantity,
+    (sum, item) => sum + (item.product ? productSalePrice(item.product) : 0) * item.quantity,
     0,
   );
 
@@ -185,7 +187,14 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
               ) : null}
             </div>
             <div className="flex items-center gap-2 md:flex-col md:items-end md:justify-between">
-              <p className="font-semibold">{formatCurrency((product?.price ?? 0) * quantity)}</p>
+              <div className="text-right">
+                <p className="font-semibold">{formatCurrency((product ? productSalePrice(product) : 0) * quantity)}</p>
+                {product && productHasPromo(product) ? (
+                  <p className="text-xs font-semibold text-[#9b5b24]">
+                    {product.promoLabel || "Promo"} -{product.promoDiscount}%
+                  </p>
+                ) : null}
+              </div>
               <div className="flex items-center gap-2">
                 <Button variant="secondary" size="icon" onClick={() => update(itemIndex, quantity - 1)}>
                   <Minus size={16} />

@@ -64,6 +64,8 @@ model Product {
   aroma             String
   description       String      @db.Text
   price             Float
+  promoLabel        String      @default("")
+  promoDiscount     Int         @default(0)
   stock             Int
   imageUrl          String
   imageAlt          String      @default("")

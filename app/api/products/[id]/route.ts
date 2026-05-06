@@ -10,6 +10,8 @@ const productUpdateSchema = z.object({
   aroma: z.string().min(2).optional(),
   description: z.string().min(8).optional(),
   price: z.number().positive().optional(),
+  promoLabel: z.string().max(40).optional(),
+  promoDiscount: z.number().int().min(0).max(90).optional(),
   stock: z.number().int().nonnegative().optional(),
   imageUrl: z.url().optional(),
   imageAlt: z.string().min(2).optional(),

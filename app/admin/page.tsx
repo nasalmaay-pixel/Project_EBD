@@ -1,6 +1,7 @@
 import { Boxes, CalendarDays, ClipboardList, CreditCard, LineChart, PackageCheck, Users, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { redirect } from "next/navigation";
+import { AdminOrderManager } from "@/components/admin-order-manager";
 import { AdminProductManager } from "@/components/admin-product-manager";
 import { LogoutButton } from "@/components/logout-button";
 import { SiteNav } from "@/components/site-nav";
@@ -71,7 +72,12 @@ export default async function AdminPage() {
     { Icon: PackageCheck, label: "Orders", value: orders.length },
     { Icon: ClipboardList, label: "Oil submissions", value: oilSubmissions.length },
     { Icon: Users, label: "Users", value: userCount },
-  ];
+  ].filter((stat) => stat.value > 0);
+  const financialStats = [
+    { Icon: Wallet, label: "Omset", value: formatCurrency(omzet), rawValue: omzet },
+    { Icon: LineChart, label: "Estimasi laba 38%", value: formatCurrency(estimatedProfit), rawValue: estimatedProfit },
+    { Icon: CreditCard, label: "Menunggu pembayaran", value: `${waitingPayments}`, rawValue: waitingPayments },
+  ].filter((stat) => stat.rawValue > 0);
 
   return (
     <main className="min-h-screen px-4 pb-20 pt-32">
@@ -87,6 +93,7 @@ export default async function AdminPage() {
           </div>
           <LogoutButton />
         </div>
+        {stats.length ? (
         <div className="mt-10 grid gap-4 md:grid-cols-4">
           {stats.map(({ Icon, label, value }) => (
             <Card key={label}>
@@ -100,13 +107,11 @@ export default async function AdminPage() {
             </Card>
           ))}
         </div>
+        ) : null}
 
+        {financialStats.length ? (
         <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {[
-            { Icon: Wallet, label: "Omset", value: formatCurrency(omzet) },
-            { Icon: LineChart, label: "Estimasi laba 38%", value: formatCurrency(estimatedProfit) },
-            { Icon: CreditCard, label: "Menunggu pembayaran", value: `${waitingPayments}` },
-          ].map(({ Icon, label, value }) => (
+          {financialStats.map(({ Icon, label, value }) => (
             <Card key={label}>
               <CardHeader>
                 <Icon className="text-[#4f6f52]" />
@@ -118,6 +123,7 @@ export default async function AdminPage() {
             </Card>
           ))}
         </div>
+        ) : null}
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_0.85fr]">
           <Card>
@@ -177,23 +183,8 @@ export default async function AdminPage() {
             <CardHeader>
               <h2 className="font-display text-3xl font-bold">Manage orders</h2>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {orders.length ? orders.slice(0, 8).map((order) => (
-                <div key={order.id} className="rounded-lg bg-white/70 p-4">
-                  <div className="flex justify-between">
-                    <p className="font-semibold">{order.id}</p>
-                    <span className="text-xs font-bold text-[#9b5b24]">{order.status}</span>
-                  </div>
-                  <p className="text-sm text-stone-600">
-                    {order.user.name} - {formatCurrency(order.totalPrice)}
-                  </p>
-                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9b5b24]">
-                    {order.paymentMethod.replace("_", " ")} / {order.paymentStatus} / {order.paymentReference}
-                  </p>
-                </div>
-              )) : (
-                <p className="rounded-lg bg-white/70 p-4 text-sm text-stone-600">No orders yet.</p>
-              )}
+            <CardContent>
+              <AdminOrderManager orders={orders} />
             </CardContent>
           </Card>
           <Card>
@@ -201,7 +192,7 @@ export default async function AdminPage() {
               <h2 className="font-display text-3xl font-bold">Manage oil</h2>
             </CardHeader>
             <CardContent className="space-y-3">
-              {oilSubmissions.map((item) => (
+              {oilSubmissions.length ? oilSubmissions.map((item) => (
                 <div key={item.location} className="rounded-lg bg-white/70 p-4">
                   <div className="flex justify-between">
                     <p className="font-semibold">{item.quantity} L</p>
@@ -209,7 +200,9 @@ export default async function AdminPage() {
                   </div>
                   <p className="text-sm text-stone-600">{item.location}</p>
                 </div>
-              ))}
+              )) : (
+                <p className="rounded-lg bg-white/70 p-4 text-sm text-stone-600">Belum ada submission minyak.</p>
+              )}
             </CardContent>
           </Card>
         </div>

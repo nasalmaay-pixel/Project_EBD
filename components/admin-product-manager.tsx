@@ -31,6 +31,8 @@ export function AdminProductManager({ products }: { products: ProductSeed[] }) {
       aroma: formData.get("aroma"),
       description: formData.get("description"),
       price: Number(formData.get("price")),
+      promoLabel: formData.get("promoLabel"),
+      promoDiscount: Number(formData.get("promoDiscount") || 0),
       stock: Number(formData.get("stock")),
       imageUrl: formData.get("imageUrl"),
       imageAlt: formData.get("imageAlt"),
@@ -72,6 +74,27 @@ export function AdminProductManager({ products }: { products: ProductSeed[] }) {
     router.refresh();
   }
 
+  async function updatePromo(productId: string, formData: FormData) {
+    setMessage("");
+
+    const response = await fetch(`/api/products/${productId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        promoLabel: formData.get("promoLabel"),
+        promoDiscount: Number(formData.get("promoDiscount") || 0),
+      }),
+    });
+
+    if (!response.ok) {
+      setMessage("Promo failed to save. Discount must be 0-90%.");
+      return;
+    }
+
+    setMessage("Promo updated.");
+    router.refresh();
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
       <form action={createProduct} className="rounded-lg border border-white/70 bg-white/70 p-5 shadow-lg shadow-stone-900/5">
@@ -108,8 +131,17 @@ export function AdminProductManager({ products }: { products: ProductSeed[] }) {
             <Field label="Price">
               <Input name="price" type="number" min={1} placeholder="149000" required />
             </Field>
+            <Field label="Promo %">
+              <Input name="promoDiscount" type="number" min={0} max={90} defaultValue={0} />
+            </Field>
             <Field label="Stock">
               <Input name="stock" type="number" min={0} placeholder="20" required />
+            </Field>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Promo label">
+              <Input name="promoLabel" placeholder="Weekend glow, Payday sale" />
             </Field>
             <Field label="Rating">
               <Input name="rating" type="number" min={0} max={5} step={0.1} defaultValue={4.9} required />
@@ -175,10 +207,29 @@ export function AdminProductManager({ products }: { products: ProductSeed[] }) {
                 <p className="mt-1 text-sm text-stone-600">
                   {product.stock} stock - {formatCurrency(product.price)}
                 </p>
+                {product.promoDiscount ? (
+                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-[#9b5b24]">
+                    {product.promoLabel || "Promo"} - {product.promoDiscount}% off
+                  </p>
+                ) : null}
                 <p className="mt-1 text-xs text-stone-500">
                   {product.variants.aromas.length} aroma / {product.variants.containers.length} wadah /{" "}
                   {product.variants.decorations.length} dekorasi
                 </p>
+                <form action={(formData) => updatePromo(product.id, formData)} className="mt-3 grid gap-2 sm:grid-cols-[1fr_92px_auto]">
+                  <Input name="promoLabel" defaultValue={product.promoLabel} placeholder="Promo label" />
+                  <Input
+                    name="promoDiscount"
+                    type="number"
+                    min={0}
+                    max={90}
+                    defaultValue={product.promoDiscount}
+                    aria-label={`${product.name} promo discount`}
+                  />
+                  <Button type="submit" variant="secondary" className="h-11">
+                    Save promo
+                  </Button>
+                </form>
               </div>
               <Button variant="ghost" size="icon" onClick={() => deleteProduct(product.id)} aria-label={`Delete ${product.name}`}>
                 <Trash2 size={17} />

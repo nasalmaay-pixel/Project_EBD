@@ -5,6 +5,8 @@ export type ProductSeed = {
   aroma: string;
   description: string;
   price: number;
+  promoLabel: string;
+  promoDiscount: number;
   stock: number;
   imageUrl: string;
   imageAlt: string;
@@ -30,6 +32,8 @@ export type ProductRecord = {
   aroma: string;
   description: string;
   price: number;
+  promoLabel?: string | null;
+  promoDiscount?: number | null;
   stock: number;
   imageUrl: string;
   imageAlt: string;
@@ -59,6 +63,8 @@ export const products: ProductSeed[] = [
     description:
       "A creamy warm candle for dinner tables, reading corners, and slow evenings with polished glass and dried botanical accents.",
     price: 129000,
+    promoLabel: "Weekend glow",
+    promoDiscount: 12,
     stock: 42,
     imageUrl:
       "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1200&q=85",
@@ -80,6 +86,8 @@ export const products: ProductSeed[] = [
     description:
       "Bright aromatherapy notes made for cafes, kitchens, and fresh morning rituals with clean reusable containers.",
     price: 119000,
+    promoLabel: "",
+    promoDiscount: 0,
     stock: 36,
     imageUrl:
       "https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=1200&q=85",
@@ -100,6 +108,8 @@ export const products: ProductSeed[] = [
     aroma: "Vetiver, cedarwood, eucalyptus",
     description: "Grounded, green, and restorative with a clean slow-burn coconut-soy wax blend.",
     price: 139000,
+    promoLabel: "",
+    promoDiscount: 0,
     stock: 28,
     imageUrl:
       "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1200&q=85",
@@ -121,6 +131,8 @@ export const products: ProductSeed[] = [
     description:
       "A premium statement candle poured from refined circular-economy materials and packed for gifting.",
     price: 159000,
+    promoLabel: "Gift deal",
+    promoDiscount: 10,
     stock: 18,
     imageUrl:
       "https://images.unsplash.com/photo-1602526432604-029a709e131c?auto=format&fit=crop&w=1200&q=85",
@@ -142,6 +154,8 @@ export const products: ProductSeed[] = [
     description:
       "A soft floral candle with petal decoration and optional handwritten greeting card for personal moments.",
     price: 149000,
+    promoLabel: "",
+    promoDiscount: 0,
     stock: 24,
     imageUrl:
       "https://images.unsplash.com/photo-1607344645866-009c7d2b63df?auto=format&fit=crop&w=1200&q=85",
@@ -163,6 +177,8 @@ export const products: ProductSeed[] = [
     description:
       "Build a candle from your preferred aroma, container, decoration, and greeting card message.",
     price: 189000,
+    promoLabel: "",
+    promoDiscount: 0,
     stock: 12,
     imageUrl:
       "https://images.unsplash.com/photo-1602526432604-029a709e131c?auto=format&fit=crop&w=1200&q=85",
@@ -187,6 +203,8 @@ export function productToDbInput(product: ProductSeed) {
     aroma: product.aroma,
     description: product.description,
     price: product.price,
+    promoLabel: product.promoLabel,
+    promoDiscount: product.promoDiscount,
     stock: product.stock,
     imageUrl: product.imageUrl,
     imageAlt: product.imageAlt,
@@ -212,6 +230,8 @@ export function productFromDb(product: ProductRecord): ProductSeed {
     aroma: product.aroma,
     description: product.description,
     price: product.price,
+    promoLabel: product.promoLabel ?? "",
+    promoDiscount: product.promoDiscount ?? 0,
     stock: product.stock,
     imageUrl: product.imageUrl,
     imageAlt: product.imageAlt || product.name,
@@ -225,6 +245,15 @@ export function productFromDb(product: ProductRecord): ProductSeed {
     giftCardAvailable: product.giftCardAvailable,
     customBuild: product.customBuild,
   };
+}
+
+export function productSalePrice(product: Pick<ProductSeed, "price" | "promoDiscount">) {
+  const discount = Math.min(Math.max(product.promoDiscount, 0), 90);
+  return Math.round(product.price * (1 - discount / 100));
+}
+
+export function productHasPromo(product: Pick<ProductSeed, "promoDiscount">) {
+  return product.promoDiscount > 0;
 }
 
 export const oilSubmissions = [

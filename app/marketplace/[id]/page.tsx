@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { SiteNav } from "@/components/site-nav";
 import { ProductConfigurator } from "@/components/product-configurator";
-import { productFromDb } from "@/lib/data";
+import { productFromDb, productHasPromo, productSalePrice } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
 
@@ -20,6 +20,8 @@ export default async function ProductDetailPage({
   }
 
   const product = productFromDb(row);
+  const hasPromo = productHasPromo(product);
+  const salePrice = productSalePrice(product);
 
   return (
     <main className="min-h-screen px-4 pb-20 pt-32">
@@ -36,6 +38,11 @@ export default async function ProductDetailPage({
             <p className="rounded-full bg-[#4f6f52]/10 px-3 py-1 text-sm font-semibold text-[#4f6f52]">
               {product.leadTime}
             </p>
+            {hasPromo ? (
+              <p className="rounded-full bg-[#d78b37] px-3 py-1 text-sm font-bold text-white">
+                {product.promoLabel || "Promo"} -{product.promoDiscount}%
+              </p>
+            ) : null}
           </div>
           <h1 className="mt-4 font-display text-7xl font-bold leading-none">{product.name}</h1>
           <p className="mt-4 text-sm font-bold uppercase tracking-[0.24em] text-[#9b5b24]">{product.aroma}</p>
@@ -44,7 +51,7 @@ export default async function ProductDetailPage({
             {[
               ["Rating", product.rating.toFixed(1)],
               ["Stock", `${product.stock}`],
-              ["Price", formatCurrency(product.price)],
+              ["Price", formatCurrency(salePrice)],
             ].map(([label, value]) => (
               <div key={label} className="rounded-lg bg-white/70 p-4 shadow-lg shadow-stone-900/5">
                 <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>

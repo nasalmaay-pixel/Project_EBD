@@ -21,6 +21,7 @@ type StoredItem = {
 };
 
 const CART_KEY = "candlex_cart";
+const CART_EVENT = "candlex-cart-change";
 
 export function ProductConfigurator({ product }: { product: ProductSeed }) {
   const [aroma, setAroma] = useState(product.variants.aromas[0]);
@@ -55,6 +56,7 @@ export function ProductConfigurator({ product }: { product: ProductSeed }) {
     ];
 
     localStorage.setItem(CART_KEY, JSON.stringify(next));
+    window.dispatchEvent(new Event(CART_EVENT));
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1800);
   }

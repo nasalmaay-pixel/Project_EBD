@@ -10,6 +10,8 @@ const productSchema = z.object({
   aroma: z.string().min(2),
   description: z.string().min(8),
   price: z.number().positive(),
+  promoLabel: z.string().max(40).default(""),
+  promoDiscount: z.number().int().min(0).max(90).default(0),
   stock: z.number().int().nonnegative(),
   imageUrl: z.url(),
   imageAlt: z.string().min(2),
