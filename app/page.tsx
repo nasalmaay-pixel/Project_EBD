@@ -452,7 +452,7 @@ export default function Home() {
           <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.24em] text-amber-300">Marketplace</p>
-              <h2 className="mt-4 font-display text-5xl font-bold">Candles with a past life.</h2>
+              <h2 className="mt-4 font-display text-5xl font-bold">Candles with a memories.</h2>
             </div>
             <Link href="/marketplace">
               <Button variant="secondary">View all products</Button>
