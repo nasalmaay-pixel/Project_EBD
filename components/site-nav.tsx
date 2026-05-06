@@ -31,7 +31,7 @@ const links = [
 
 const CART_KEY = "candlex_cart";
 const CART_EVENT = "candlex-cart-change";
-const SUPPORT_URL = "https://wa.me/6281234567890?text=Halo%20CandleX%2C%20saya%20butuh%20bantuan.";
+const SUPPORT_URL = "https://wa.me/6285232696528?text=Halo%20CandleX%2C%20saya%20butuh%20bantuan.";
 
 type ReminderProduct = {
   id: string;
