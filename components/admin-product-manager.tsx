@@ -36,7 +36,7 @@ export function AdminProductManager({ products }: { products: ProductSeed[] }) {
       stock: Number(formData.get("stock")),
       imageUrl: formData.get("imageUrl"),
       imageAlt: formData.get("imageAlt"),
-      rating: Number(formData.get("rating") || 4.9),
+      rating: 4.9,
       leadTime: formData.get("leadTime"),
       aromaOptions: splitOptions(formData.get("aromaOptions")),
       containerOptions: splitOptions(formData.get("containerOptions")),
@@ -139,14 +139,9 @@ export function AdminProductManager({ products }: { products: ProductSeed[] }) {
             </Field>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Promo label">
-              <Input name="promoLabel" placeholder="Weekend glow, Payday sale" />
-            </Field>
-            <Field label="Rating">
-              <Input name="rating" type="number" min={0} max={5} step={0.1} defaultValue={4.9} required />
-            </Field>
-          </div>
+          <Field label="Promo label">
+            <Input name="promoLabel" placeholder="Weekend glow, Payday sale" />
+          </Field>
 
           <Field label="Image URL">
             <Input name="imageUrl" type="url" placeholder="https://images.unsplash.com/..." required />
