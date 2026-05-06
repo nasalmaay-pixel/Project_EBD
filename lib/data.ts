@@ -289,8 +289,8 @@ export const awarenessArticles = [
     date: "2026-05-02",
     category: "Circular design",
     imageUrl:
-      "https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=900&q=82",
-    imageAlt: "Reusable candle container with soft home styling",
+      "https://images.unsplash.com/photo-1771149437810-56fec4035757?auto=format&fit=crop&w=900&q=82",
+    imageAlt: "Oil slick spreading across polluted water",
     summary:
       "Glass jars, ceramic cups, and tins can extend a candle product cycle when customers clean, refill, or return them.",
   },
@@ -300,8 +300,8 @@ export const awarenessArticles = [
     date: "2026-04-26",
     category: "Home awareness",
     imageUrl:
-      "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=82",
-    imageAlt: "Lit candle arranged safely on a home table",
+      "https://images.unsplash.com/photo-1759868414347-e3b4f79f4bba?auto=format&fit=crop&w=900&q=82",
+    imageAlt: "Plastic waste floating in dirty water",
     summary:
       "Trimming wicks, keeping candles away from airflow, and stopping before the wax runs out helps candles burn cleaner.",
   },
@@ -311,8 +311,8 @@ export const awarenessArticles = [
     date: "2026-04-18",
     category: "Sustainability",
     imageUrl:
-      "https://images.unsplash.com/photo-1602526432604-029a709e131c?auto=format&fit=crop&w=900&q=82",
-    imageAlt: "Gift-ready aromatherapy candle product preview",
+      "https://images.unsplash.com/photo-1776260700301-c1d5e30a3f19?auto=format&fit=crop&w=900&q=82",
+    imageAlt: "Murky green water contaminated with waste",
     summary:
       "Dummy coverage: refined used cooking oil can become part of a small-batch candle supply story for mindful gifts.",
   },
