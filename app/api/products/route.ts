@@ -26,7 +26,7 @@ const productSchema = z.object({
 
 export async function GET() {
   const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ customBuild: "desc" }, { createdAt: "desc" }],
   });
 
   return NextResponse.json({ products });

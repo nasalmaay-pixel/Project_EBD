@@ -20,7 +20,8 @@ import { AwarenessSection } from "@/components/awareness-section";
 import { CustomerTestimonials } from "@/components/customer-testimonials";
 import { ProductCard } from "@/components/product-card";
 import { SiteNav } from "@/components/site-nav";
-import { products, steps } from "@/lib/data";
+import { productFromDb, steps } from "@/lib/data";
+import type { ProductRecord, ProductSeed } from "@/lib/data";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -58,6 +59,8 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 0.35], [0, -90]);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [marketplaceProducts, setMarketplaceProducts] = useState<ProductSeed[]>([]);
+  const [isMarketplaceLoading, setIsMarketplaceLoading] = useState(true);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -65,6 +68,40 @@ export default function Home() {
     }, 5200);
 
     return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProducts() {
+      try {
+        const response = await fetch("/api/products");
+
+        if (!response.ok) {
+          throw new Error("Failed to load products");
+        }
+
+        const data = (await response.json()) as { products: ProductRecord[] };
+
+        if (isMounted) {
+          setMarketplaceProducts(data.products.map(productFromDb));
+        }
+      } catch {
+        if (isMounted) {
+          setMarketplaceProducts([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsMarketplaceLoading(false);
+        }
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const slide = heroSlides[activeSlide];
@@ -421,11 +458,23 @@ export default function Home() {
               <Button variant="secondary">View all products</Button>
             </Link>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {isMarketplaceLoading ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-[32rem] animate-pulse rounded-lg bg-white/10" />
+              ))}
+            </div>
+          ) : marketplaceProducts.length ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {marketplaceProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-white/15 bg-white/10 p-8 text-center text-amber-50/80">
+              Produk marketplace belum tersedia.
+            </div>
+          )}
         </div>
       </section>
 
