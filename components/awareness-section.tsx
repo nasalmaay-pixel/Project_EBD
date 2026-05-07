@@ -9,6 +9,7 @@ const fallbackImageUrl =
 type NewsApiArticle = {
   title?: string;
   description?: string | null;
+  content?: string | null;
   url?: string;
   urlToImage?: string | null;
   source?: {
@@ -27,6 +28,21 @@ type AwarenessArticle = {
   summary: string;
   url: string;
 };
+
+const vehicleKeywords = [
+  "automotive",
+  "biodiesel",
+  "car",
+  "cars",
+  "diesel",
+  "engine",
+  "ev",
+  "fuel",
+  "motorcycle",
+  "truck",
+  "vehicle",
+  "vehicles",
+];
 
 function formatArticleDate(value?: string) {
   if (!value) {
@@ -50,6 +66,21 @@ function toAwarenessArticle(article: NewsApiArticle): AwarenessArticle | null {
   const title = article.title?.trim();
 
   if (!title || title === "[Removed]") {
+    return null;
+  }
+
+  const searchable = [
+    title,
+    article.description,
+    article.content,
+    article.url,
+    article.source?.name,
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLowerCase();
+
+  if (vehicleKeywords.some((keyword) => searchable.includes(keyword))) {
     return null;
   }
 
@@ -77,8 +108,8 @@ export function AwarenessSection() {
     async function loadNews() {
       try {
         const params = new URLSearchParams({
-          q: '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR disposal OR reuse OR recycling OR "scented candles" OR "aromatherapy candles")',
-          pageSize: "6",
+          q: '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR "scented candles" OR "aromatherapy candles" OR "cooking oil disposal" OR "cooking oil reuse") -vehicle -vehicles -car -cars -automotive -engine -diesel -biodiesel -fuel -motorcycle -truck',
+          pageSize: "12",
         });
         const response = await fetch(`/api/news?${params.toString()}`);
 
