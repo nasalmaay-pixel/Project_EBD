@@ -12,7 +12,7 @@ import { Select } from "@/components/ui/select";
 import { estimateOilPrice, formatCurrency } from "@/lib/utils";
 
 export default function SellOilPage() {
-  const [quantity, setQuantity] = useState(12);
+  const [quantity, setQuantity] = useState("12");
   const [preview, setPreview] = useState("");
   const [aiEstimate, setAiEstimate] = useState<{
     liters: number;
@@ -30,7 +30,8 @@ export default function SellOilPage() {
   } | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const estimate = useMemo(() => estimateOilPrice(quantity), [quantity]);
+  const quantityValue = useMemo(() => parseOilQuantity(quantity), [quantity]);
+  const estimate = useMemo(() => estimateOilPrice(quantityValue), [quantityValue]);
   const highlights: { Icon: LucideIcon; title: string; body: string }[] = [
     { Icon: MapPin, title: "Coverage", body: "Pickup or drop-off" },
     { Icon: CalendarClock, title: "Tracking", body: "Requested to completed" },
@@ -40,7 +41,7 @@ export default function SellOilPage() {
   async function submit(formData: FormData) {
     const payload = {
       location: formData.get("location"),
-      quantity: Number(formData.get("quantity")),
+      quantity: parseOilQuantity(formData.get("quantity")),
       pickupMethod: formData.get("pickupMethod"),
       schedule: formData.get("schedule"),
     };
@@ -202,7 +203,7 @@ export default function SellOilPage() {
                         Confidence {aiEstimate.confidence}% / {aiEstimate.source === "gemini" ? "Gemini" : "Demo"}
                       </p>
                       <p className="mt-3 text-sm leading-6 text-amber-50/80">{aiEstimate.note}</p>
-                      <Button type="button" variant="secondary" className="mt-4 w-full" onClick={() => setQuantity(aiEstimate.liters)}>
+                      <Button type="button" variant="secondary" className="mt-4 w-full" onClick={() => setQuantity(String(aiEstimate.liters))}>
                         Use this estimate
                       </Button>
                     </>
@@ -228,11 +229,12 @@ export default function SellOilPage() {
                 <span className="text-sm font-semibold">Quantity (liters)</span>
                 <Input
                   name="quantity"
-                  type="number"
-                  min={1}
-                  step={0.5}
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]+([,.][0-9]+)?"
                   value={quantity}
-                  onChange={(event) => setQuantity(Number(event.target.value))}
+                  onChange={(event) => setQuantity(event.target.value)}
+                  placeholder="Contoh: 1,5"
                   required
                 />
               </label>
@@ -263,6 +265,11 @@ export default function SellOilPage() {
       ) : null}
     </main>
   );
+}
+
+function parseOilQuantity(value: FormDataEntryValue | string | null) {
+  const quantity = Number(String(value ?? "").replace(",", "."));
+  return Number.isFinite(quantity) ? quantity : 0;
 }
 
 function PickupOverlay({

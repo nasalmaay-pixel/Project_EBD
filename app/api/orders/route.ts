@@ -6,7 +6,7 @@ import { productSalePrice } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 
 const checkoutSchema = z.object({
-  paymentMethod: z.enum(["QRIS", "BANK_TRANSFER", "E_WALLET"]).default("QRIS"),
+  paymentMethod: z.enum(["QRIS", "BANK_TRANSFER", "E_WALLET"]).default("BANK_TRANSFER"),
   items: z.array(
     z.object({
       productId: z.string(),

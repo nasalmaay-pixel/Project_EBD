@@ -26,20 +26,23 @@ const paymentOptions = [
   {
     id: "QRIS",
     label: "QRIS",
-    detail: "Scan QR CX-QRIS-2026",
+    detail: "Belum tersedia",
     Icon: QrCode,
+    available: false,
   },
   {
     id: "BANK_TRANSFER",
     label: "Bank Transfer",
-    detail: "BCA 8800 1226 004 a.n. CandleX",
+    detail: "BRI 011001037801539 a.n CandleX",
     Icon: Building2,
+    available: true,
   },
   {
     id: "E_WALLET",
     label: "E-Wallet",
-    detail: "OVO / GoPay checkout link",
+    detail: "Belum tersedia",
     Icon: WalletCards,
+    available: false,
   },
 ] as const;
 
@@ -57,11 +60,12 @@ export function readCart(): CartItem[] {
 
 export function CartClient({ products }: { products: ProductSeed[] }) {
   const [items, setItems] = useState<CartItem[]>(() => readCart());
-  const [paymentMethod, setPaymentMethod] = useState<(typeof paymentOptions)[number]["id"]>("QRIS");
+  const [paymentMethod, setPaymentMethod] = useState<(typeof paymentOptions)[number]["id"]>("BANK_TRANSFER");
   const [checkoutResult, setCheckoutResult] = useState<{
     reference: string;
     points: number;
     method: string;
+    instruction: string;
   } | null>(null);
 
   useEffect(() => {
@@ -116,16 +120,19 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
         reference: "Login required",
         points: 0,
         method: "Please login before checkout",
+        instruction: "",
       });
       return;
     }
 
     const result = await response.json() as { payment?: { reference?: string }, points?: number };
+    const selectedPayment = paymentOptions.find((option) => option.id === paymentMethod);
     setItems([]);
     setCheckoutResult({
       reference: result.payment?.reference ?? "CX-PAY",
       points: result.points ?? 0,
-      method: paymentMethod.replace("_", " "),
+      method: selectedPayment?.label ?? paymentMethod.replace("_", " "),
+      instruction: selectedPayment?.detail ?? "",
     });
   }
 
@@ -215,17 +222,20 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
         <p className="text-sm uppercase tracking-[0.22em] text-stone-500">Secure payment</p>
         <h2 className="mt-2 font-display text-3xl font-bold">Checkout</h2>
         <div className="mt-5 grid gap-3">
-          {paymentOptions.map(({ id, label, detail, Icon }) => {
+          {paymentOptions.map(({ id, label, detail, Icon, available }) => {
             const isActive = paymentMethod === id;
 
             return (
               <button
                 key={id}
                 type="button"
-                onClick={() => setPaymentMethod(id)}
+                onClick={() => available && setPaymentMethod(id)}
+                disabled={!available}
                 className={`rounded-lg border p-4 text-left transition ${
                   isActive
                     ? "border-[#d78b37] bg-amber-50 shadow-lg shadow-amber-900/10"
+                    : !available
+                      ? "cursor-not-allowed border-stone-200 bg-stone-100/70 opacity-70"
                     : "border-stone-200 bg-white/65 hover:bg-white"
                 }`}
               >
@@ -258,7 +268,7 @@ function CheckoutOverlay({
   result,
   onClose,
 }: {
-  result: { reference: string; points: number; method: string };
+  result: { reference: string; points: number; method: string; instruction: string };
   onClose: () => void;
 }) {
   return (
@@ -273,6 +283,11 @@ function CheckoutOverlay({
           <p>
             <span className="font-semibold">Method:</span> {result.method}
           </p>
+          {result.instruction ? (
+            <p>
+              <span className="font-semibold">Payment:</span> {result.instruction}
+            </p>
+          ) : null}
           <p>
             <span className="font-semibold">Reference:</span> {result.reference}
           </p>
