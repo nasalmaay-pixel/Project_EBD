@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 
+const fallbackImageUrl =
+  "https://images.unsplash.com/photo-1771149437810-56fec4035757?auto=format&fit=crop&w=900&q=82";
+
 const fallbackArticles = [
   {
     title: "Cara menyimpan minyak jelantah sebelum pickup",
     description: "Gunakan wadah tertutup, pisahkan dari air, dan beri label tanggal agar kualitas tetap mudah dicek.",
     url: "/awareness",
-    urlToImage: "",
+    urlToImage: fallbackImageUrl,
     source: { name: "CandleX Awareness" },
     publishedAt: new Date().toISOString(),
   },
@@ -13,7 +16,7 @@ const fallbackArticles = [
     title: "Promo circular product minggu ini",
     description: "Produk dengan label promo akan muncul otomatis di marketplace dan reminder topbar.",
     url: "/marketplace",
-    urlToImage: "",
+    urlToImage: fallbackImageUrl,
     source: { name: "CandleX Marketplace" },
     publishedAt: new Date().toISOString(),
   },
