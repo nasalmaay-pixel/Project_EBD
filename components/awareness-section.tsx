@@ -57,12 +57,12 @@ function toAwarenessArticle(article: NewsApiArticle): AwarenessArticle | null {
     title,
     source: article.source?.name?.trim() || "NewsAPI",
     date: formatArticleDate(article.publishedAt),
-    category: "Sustainability news",
+    category: "Limbah jelantah",
     imageUrl: article.urlToImage?.trim() || fallbackImageUrl,
     imageAlt: title,
     summary:
       article.description?.trim() ||
-      "Update terbaru seputar circular living, pengelolaan limbah, dan kebiasaan rumah yang lebih bertanggung jawab.",
+      "Update terbaru seputar pencemaran limbah jelantah, pengelolaan minyak bekas, dan peluang daur ulang.",
     url: article.url || "/awareness",
   };
 }
@@ -77,7 +77,7 @@ export function AwarenessSection() {
     async function loadNews() {
       try {
         const params = new URLSearchParams({
-          q: '"used cooking oil" OR jelantah OR "candle sustainability" OR "waste cooking oil"',
+          q: '("waste cooking oil" OR "used cooking oil" OR jelantah) AND (pollution OR recycling OR environment OR wastewater OR biodiesel)',
           pageSize: "6",
         });
         const response = await fetch(`/api/news?${params.toString()}`);
@@ -118,10 +118,10 @@ export function AwarenessSection() {
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#9b5b24]">Education awareness</p>
-          <h2 className="mt-3 font-display text-4xl font-bold">Candle care and circular living.</h2>
+          <h2 className="mt-3 font-display text-4xl font-bold">Limbah jelantah dan daur ulang.</h2>
         </div>
         <p className="max-w-md text-sm leading-6 text-stone-600">
-          Artikel singkat tentang perawatan lilin, reuse container, dan dampak limbah jelantah pada lingkungan.
+          Artikel singkat tentang pencemaran limbah jelantah, dampaknya pada air, dan cara minyak bekas masuk kembali ke ekonomi circular.
         </p>
       </div>
 
@@ -142,7 +142,13 @@ export function AwarenessSection() {
           ))
         ) : articles.length > 0 ? (
           articles.map((article) => (
-            <article key={`${article.title}-${article.source}`} className="overflow-hidden rounded-lg bg-stone-50/85">
+            <a
+              key={`${article.title}-${article.source}`}
+              href={article.url}
+              target="_blank"
+              rel="noreferrer"
+              className="group overflow-hidden rounded-lg bg-stone-50/85 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-stone-900/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d78b37]"
+            >
               <img src={article.imageUrl} alt={article.imageAlt} className="aspect-[16/10] w-full object-cover" />
               <div className="p-4">
                 <div className="flex items-center justify-between gap-3 text-xs font-semibold text-stone-500">
@@ -155,19 +161,14 @@ export function AwarenessSection() {
                     {article.date}
                   </span>
                 </div>
-                <h3 className="mt-4 font-display text-2xl font-bold">{article.title}</h3>
+                <h3 className="mt-4 font-display text-2xl font-bold transition group-hover:text-[#9b5b24]">{article.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-stone-600">{article.summary}</p>
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#9b5b24] transition hover:text-stone-950"
-                >
+                <span className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#9b5b24] transition group-hover:text-stone-950">
                   {article.source}
                   <ExternalLink size={13} />
-                </a>
+                </span>
               </div>
-            </article>
+            </a>
           ))
         ) : (
           <article className="rounded-lg bg-stone-50/85 p-6 md:col-span-3">

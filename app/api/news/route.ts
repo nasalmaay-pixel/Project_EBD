@@ -5,19 +5,19 @@ const fallbackImageUrl =
 
 const fallbackArticles = [
   {
-    title: "Cara menyimpan minyak jelantah sebelum pickup",
-    description: "Gunakan wadah tertutup, pisahkan dari air, dan beri label tanggal agar kualitas tetap mudah dicek.",
+    title: "Dampak minyak jelantah pada saluran air dan lingkungan",
+    description: "Minyak jelantah yang dibuang ke wastafel dapat menyumbat pipa, mencemari air, dan mengganggu ekosistem mikro.",
     url: "/awareness",
     urlToImage: fallbackImageUrl,
-    source: { name: "CandleX Awareness" },
+    source: { name: "CandleX Edukasi Lingkungan" },
     publishedAt: new Date().toISOString(),
   },
   {
-    title: "Promo circular product minggu ini",
-    description: "Produk dengan label promo akan muncul otomatis di marketplace dan reminder topbar.",
-    url: "/marketplace",
+    title: "Daur ulang minyak jelantah menjadi bahan bernilai",
+    description: "Pengumpulan minyak jelantah membantu mengubah limbah dapur menjadi bahan daur ulang untuk produk circular.",
+    url: "/sell-oil",
     urlToImage: fallbackImageUrl,
-    source: { name: "CandleX Marketplace" },
+    source: { name: "CandleX Jelantah Pay" },
     publishedAt: new Date().toISOString(),
   },
 ];
@@ -25,7 +25,9 @@ const fallbackArticles = [
 export async function GET(request: Request) {
   const apiKey = process.env.NEWSAPI_KEY;
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q") ?? '"used cooking oil" OR jelantah OR candle sustainability';
+  const query =
+    searchParams.get("q") ??
+    '("waste cooking oil" OR "used cooking oil" OR jelantah) AND (pollution OR recycling OR environment OR wastewater OR biodiesel)';
   const pageSize = searchParams.get("pageSize") ?? "6";
 
   if (!apiKey) {
