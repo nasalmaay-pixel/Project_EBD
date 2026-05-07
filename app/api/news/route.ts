@@ -5,19 +5,19 @@ const fallbackImageUrl =
 
 const fallbackArticles = [
   {
-    title: "Dampak minyak jelantah pada saluran air dan lingkungan",
-    description: "Minyak jelantah yang dibuang ke wastafel dapat menyumbat pipa, mencemari air, dan mengganggu ekosistem mikro.",
+    title: "Dampak minyak jelantah setelah memasak",
+    description: "Minyak yang dipakai berulang dapat berubah kualitasnya, meninggalkan residu, dan perlu disimpan dengan benar sebelum didaur ulang.",
     url: "/awareness",
     urlToImage: fallbackImageUrl,
-    source: { name: "CandleX Edukasi Lingkungan" },
+    source: { name: "CandleX Jelantah Awareness" },
     publishedAt: new Date().toISOString(),
   },
   {
-    title: "Daur ulang minyak jelantah menjadi bahan bernilai",
-    description: "Pengumpulan minyak jelantah membantu mengubah limbah dapur menjadi bahan daur ulang untuk produk circular.",
+    title: "Minyak jelantah sebagai awal produk aromatherapy candles",
+    description: "Jelantah yang terkumpul dapat masuk ke rantai daur ulang dan mendukung pembuatan produk circular seperti aromatherapy candles.",
     url: "/sell-oil",
     urlToImage: fallbackImageUrl,
-    source: { name: "CandleX Jelantah Pay" },
+    source: { name: "CandleX Aromatherapy Candles" },
     publishedAt: new Date().toISOString(),
   },
 ];
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query =
     searchParams.get("q") ??
-    '("waste cooking oil" OR "used cooking oil" OR jelantah) AND (pollution OR recycling OR environment OR wastewater OR biodiesel)';
+    '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR disposal OR reuse OR recycling OR "scented candles" OR "aromatherapy candles")';
   const pageSize = searchParams.get("pageSize") ?? "6";
 
   if (!apiKey) {

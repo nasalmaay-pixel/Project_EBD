@@ -57,12 +57,12 @@ function toAwarenessArticle(article: NewsApiArticle): AwarenessArticle | null {
     title,
     source: article.source?.name?.trim() || "NewsAPI",
     date: formatArticleDate(article.publishedAt),
-    category: "Limbah jelantah",
+    category: "Jelantah after cooking",
     imageUrl: article.urlToImage?.trim() || fallbackImageUrl,
     imageAlt: title,
     summary:
       article.description?.trim() ||
-      "Update terbaru seputar pencemaran limbah jelantah, pengelolaan minyak bekas, dan peluang daur ulang.",
+      "Update terbaru seputar dampak minyak jelantah setelah memasak, cara menyimpannya, dan peluang daur ulang untuk aromatherapy candles.",
     url: article.url || "/awareness",
   };
 }
@@ -77,7 +77,7 @@ export function AwarenessSection() {
     async function loadNews() {
       try {
         const params = new URLSearchParams({
-          q: '("waste cooking oil" OR "used cooking oil" OR jelantah) AND (pollution OR recycling OR environment OR wastewater OR biodiesel)',
+          q: '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR disposal OR reuse OR recycling OR "scented candles" OR "aromatherapy candles")',
           pageSize: "6",
         });
         const response = await fetch(`/api/news?${params.toString()}`);
@@ -118,10 +118,10 @@ export function AwarenessSection() {
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#9b5b24]">Education awareness</p>
-          <h2 className="mt-3 font-display text-4xl font-bold">Limbah jelantah dan daur ulang.</h2>
+          <h2 className="mt-3 font-display text-4xl font-bold">Dari minyak bekas ke aroma candles.</h2>
         </div>
         <p className="max-w-md text-sm leading-6 text-stone-600">
-          Artikel singkat tentang pencemaran limbah jelantah, dampaknya pada air, dan cara minyak bekas masuk kembali ke ekonomi circular.
+          Artikel singkat tentang dampak minyak jelantah setelah memasak, cara mengelolanya di rumah, dan jalur daur ulang menuju aromatherapy candles.
         </p>
       </div>
 

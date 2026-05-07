@@ -290,6 +290,37 @@ export default function Home() {
         </div>
       </section> */}
 
+<section className="bg-stone-950 px-4 py-24 text-amber-50">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.24em] text-amber-300">Marketplace</p>
+              <h2 className="mt-4 font-display text-5xl font-bold">Candles with a memories.</h2>
+            </div>
+            <Link href="/marketplace">
+              <Button variant="secondary">View all products</Button>
+            </Link>
+          </div>
+          {isMarketplaceLoading ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-[32rem] animate-pulse rounded-lg bg-white/10" />
+              ))}
+            </div>
+          ) : marketplaceProducts.length ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {marketplaceProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-white/15 bg-white/10 p-8 text-center text-amber-50/80">
+              Produk marketplace belum tersedia.
+            </div>
+          )}
+        </div>
+      </section>
+      
       <section className="relative overflow-hidden bg-stone-950 px-4 py-24 text-amber-50">
         <div className="absolute inset-0 opacity-30">
           <img
@@ -447,36 +478,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-stone-950 px-4 py-24 text-amber-50">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.24em] text-amber-300">Marketplace</p>
-              <h2 className="mt-4 font-display text-5xl font-bold">Candles with a memories.</h2>
-            </div>
-            <Link href="/marketplace">
-              <Button variant="secondary">View all products</Button>
-            </Link>
-          </div>
-          {isMarketplaceLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-[32rem] animate-pulse rounded-lg bg-white/10" />
-              ))}
-            </div>
-          ) : marketplaceProducts.length ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {marketplaceProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-lg border border-white/15 bg-white/10 p-8 text-center text-amber-50/80">
-              Produk marketplace belum tersedia.
-            </div>
-          )}
-        </div>
-      </section>
+      
 
       <CustomerTestimonials className="bg-[#fffaf0] px-4 py-24" />
 
