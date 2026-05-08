@@ -110,8 +110,11 @@ export function AwarenessSection() {
         const params = new URLSearchParams({
           q: '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR "scented candles" OR "aromatherapy candles" OR "cooking oil disposal" OR "cooking oil reuse") -vehicle -vehicles -car -cars -automotive -engine -diesel -biodiesel -fuel -motorcycle -truck',
           pageSize: "12",
+          t: Date.now().toString(),
         });
-        const response = await fetch(`/api/news?${params.toString()}`);
+        const response = await fetch(`/api/news?${params.toString()}`, {
+          cache: "no-store",
+        });
 
         if (!response.ok) {
           throw new Error("Failed to load awareness news");

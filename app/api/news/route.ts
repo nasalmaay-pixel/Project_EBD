@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const fallbackImageUrl =
   "https://images.unsplash.com/photo-1771149437810-56fec4035757?auto=format&fit=crop&w=900&q=82";
 
@@ -61,27 +64,23 @@ function isNonVehicleArticle(article: unknown) {
   return !vehicleKeywords.some((keyword) => searchable.includes(keyword));
 }
 
-export async function GET(request: Request) {
-  const apiKey = process.env.NEWSAPI_KEY;
-  const { searchParams } = new URL(request.url);
-  const query =
-    searchParams.get("q") ??
-    '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR "scented candles" OR "aromatherapy candles" OR "cooking oil disposal" OR "cooking oil reuse") -vehicle -vehicles -car -cars -automotive -engine -diesel -biodiesel -fuel -motorcycle -truck';
-  const pageSize = searchParams.get("pageSize") ?? "6";
+function newsResponse(body: unknown) {
+  return NextResponse.json(body, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+      "Surrogate-Control": "no-store",
+    },
+  });
+}
 
-  if (!apiKey) {
-    return NextResponse.json({
-      status: "demo",
-      articles: fallbackArticles,
-      message: "Add NEWSAPI_KEY to enable live NewsAPI results.",
-    });
-  }
-
+async function fetchNewsArticles(apiKey: string, query: string, requestParams: URLSearchParams, pageSize: number) {
   const url = new URL("https://newsapi.org/v2/everything");
   url.searchParams.set("q", query);
-  url.searchParams.set("language", searchParams.get("language") ?? "en");
-  url.searchParams.set("sortBy", searchParams.get("sortBy") ?? "publishedAt");
-  url.searchParams.set("pageSize", pageSize);
+  url.searchParams.set("language", requestParams.get("language") ?? "en");
+  url.searchParams.set("sortBy", requestParams.get("sortBy") ?? "publishedAt");
+  url.searchParams.set("pageSize", String(Math.min(Math.max(pageSize * 3, 12), 100)));
 
   const response = await fetch(url, {
     headers: { "X-Api-Key": apiKey },
@@ -89,22 +88,91 @@ export async function GET(request: Request) {
   }).catch(() => null);
 
   if (!response?.ok) {
-    return NextResponse.json({
-      status: "demo",
-      articles: fallbackArticles,
-      message: "NewsAPI is unavailable. Showing fallback articles.",
-    });
+    return null;
   }
 
-  const result = await response.json() as {
+  return response.json() as Promise<{
     status: string;
     articles?: unknown[];
     totalResults?: number;
-  };
+  }>;
+}
 
-  return NextResponse.json({
-    status: result.status,
-    totalResults: result.totalResults ?? 0,
-    articles: (result.articles ?? []).filter(isNonVehicleArticle).slice(0, Number(pageSize)),
+export async function GET(request: Request) {
+  const apiKey = process.env.NEWSAPI_KEY;
+  const { searchParams } = new URL(request.url);
+  const query =
+    searchParams.get("q") ??
+    '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR "scented candles" OR "aromatherapy candles" OR "cooking oil disposal" OR "cooking oil reuse") -vehicle -vehicles -car -cars -automotive -engine -diesel -biodiesel -fuel -motorcycle -truck';
+  const pageSize = Number(searchParams.get("pageSize") ?? "6");
+
+  if (!apiKey) {
+    return newsResponse({
+      status: "demo",
+      articles: fallbackArticles,
+      message: "Add NEWSAPI_KEY to enable live NewsAPI results.",
+    });
+  }
+
+  const queryCandidates = Array.from(
+    new Set([
+      query,
+      '"used cooking oil"',
+      '"waste cooking oil"',
+      "cooking oil reuse",
+      "cooking oil disposal",
+      '"scented candles" OR "aromatherapy candles"',
+    ]),
+  );
+
+  let status = "ok";
+  let totalResults = 0;
+  const articles: unknown[] = [];
+  const seenUrls = new Set<string>();
+
+  for (const nextQuery of queryCandidates) {
+    const result = await fetchNewsArticles(apiKey, nextQuery, searchParams, pageSize);
+
+    if (!result) {
+      continue;
+    }
+
+    status = result.status;
+    totalResults += result.totalResults ?? 0;
+
+    for (const article of result.articles ?? []) {
+      if (!isNonVehicleArticle(article)) {
+        continue;
+      }
+
+      const url = isRecord(article) && typeof article.url === "string" ? article.url : "";
+      const key = url || JSON.stringify(article);
+
+      if (seenUrls.has(key)) {
+        continue;
+      }
+
+      seenUrls.add(key);
+      articles.push(article);
+    }
+
+    if (articles.length >= pageSize) {
+      break;
+    }
+  }
+
+  if (articles.length === 0) {
+    return newsResponse({
+      status: "demo",
+      totalResults,
+      articles: fallbackArticles,
+      message: "NewsAPI returned no matching articles. Showing fallback articles.",
+    });
+  }
+
+  return newsResponse({
+    status,
+    totalResults,
+    articles: articles.slice(0, pageSize),
   });
 }
