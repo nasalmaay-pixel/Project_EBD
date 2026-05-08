@@ -85,7 +85,7 @@ export async function GET(request: Request) {
 
   const response = await fetch(url, {
     headers: { "X-Api-Key": apiKey },
-    next: { revalidate: 1800 },
+    cache: "no-store",
   }).catch(() => null);
 
   if (!response?.ok) {
