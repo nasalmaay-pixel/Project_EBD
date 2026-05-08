@@ -22,12 +22,51 @@ const fallbackArticles = [
   },
 ];
 
+const vehicleKeywords = [
+  "automotive",
+  "biodiesel",
+  "car",
+  "cars",
+  "diesel",
+  "engine",
+  "ev",
+  "fuel",
+  "motorcycle",
+  "truck",
+  "vehicle",
+  "vehicles",
+];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object";
+}
+
+function isNonVehicleArticle(article: unknown) {
+  if (!isRecord(article)) {
+    return false;
+  }
+
+  const source = isRecord(article.source) ? article.source.name : "";
+  const searchable = [
+    article.title,
+    article.description,
+    article.content,
+    article.url,
+    source,
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLowerCase();
+
+  return !vehicleKeywords.some((keyword) => searchable.includes(keyword));
+}
+
 export async function GET(request: Request) {
   const apiKey = process.env.NEWSAPI_KEY;
   const { searchParams } = new URL(request.url);
   const query =
     searchParams.get("q") ??
-    '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR disposal OR reuse OR recycling OR "scented candles" OR "aromatherapy candles")';
+    '("used cooking oil" OR "waste cooking oil" OR jelantah) AND ("after cooking" OR "scented candles" OR "aromatherapy candles" OR "cooking oil disposal" OR "cooking oil reuse") -vehicle -vehicles -car -cars -automotive -engine -diesel -biodiesel -fuel -motorcycle -truck';
   const pageSize = searchParams.get("pageSize") ?? "6";
 
   if (!apiKey) {
@@ -66,6 +105,6 @@ export async function GET(request: Request) {
   return NextResponse.json({
     status: result.status,
     totalResults: result.totalResults ?? 0,
-    articles: result.articles ?? [],
+    articles: (result.articles ?? []).filter(isNonVehicleArticle).slice(0, Number(pageSize)),
   });
 }
