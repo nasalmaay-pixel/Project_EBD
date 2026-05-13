@@ -38,6 +38,9 @@ export default function SellOilPage() {
 
   async function submit(formData: FormData) {
     const payload = {
+      name: formData.get("name"),
+      phoneNumber: formData.get("phoneNumber"),
+      accountNumber: formData.get("accountNumber"),
       location: formData.get("location"),
       quantity: parseOilQuantity(formData.get("quantity")),
       pickupMethod: formData.get("pickupMethod"),
@@ -219,6 +222,18 @@ export default function SellOilPage() {
             </div>
 
             <label className="space-y-2">
+              <span className="text-sm font-semibold">Full name</span>
+              <Input name="name" placeholder="Budi Santoso" required />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold">Phone number</span>
+              <Input name="phoneNumber" type="tel" placeholder="081234567890" required />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold">Account number (bank/e-wallet)</span>
+              <Input name="accountNumber" placeholder="1234567890" required />
+            </label>
+            <label className="space-y-2">
               <span className="text-sm font-semibold">Location</span>
               <Input name="location" placeholder="Jl. Kemang Raya, Jakarta Selatan" required />
             </label>
@@ -248,7 +263,7 @@ export default function SellOilPage() {
               <span className="text-sm font-semibold">Schedule</span>
               <Input name="schedule" type="datetime-local" required />
             </label>
-            <div className="rounded-lg bg-stone-950 p-5 text-amber-50">
+            <div className="rounded-lg bg-stone-950 p-5 text-amber-50 pointer-events-none select-none">
               <p className="text-sm uppercase tracking-[0.22em] text-amber-200">Price estimate</p>
               <p className="mt-2 font-display text-4xl font-bold">{formatCurrency(estimate)}</p>
             </div>

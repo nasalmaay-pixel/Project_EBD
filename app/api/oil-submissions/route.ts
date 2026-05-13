@@ -6,6 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { estimateOilPrice } from "@/lib/utils";
 
 const oilSubmissionSchema = z.object({
+  name: z.string().min(1),
+  phoneNumber: z.string().min(1),
+  accountNumber: z.string().min(1),
   location: z.string().min(5),
   quantity: z.number().positive(),
   pickupMethod: z.enum(["PICKUP", "DROPOFF"]),
@@ -45,6 +48,9 @@ export async function POST(request: Request) {
     prisma.oilSubmission.create({
       data: {
         userId: user.id,
+        name: parsed.data.name,
+        phoneNumber: parsed.data.phoneNumber,
+        accountNumber: parsed.data.accountNumber,
         quantity: parsed.data.quantity,
         location: parsed.data.location,
         pickupMethod: parsed.data.pickupMethod,

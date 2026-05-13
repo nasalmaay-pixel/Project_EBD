@@ -13,7 +13,7 @@ export function CustomerTestimonials({ className = "" }: CustomerTestimonialsPro
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#9b5b24]">Customer stories</p>
             <h2 className="mt-3 font-display text-4xl font-bold text-stone-950">
-              Mereka suka glow dan aromanya.
+              Kesan dalam setiap cahaya.
             </h2>
           </div>
           <p className="max-w-md text-sm leading-6 text-stone-600">

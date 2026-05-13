@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -47,6 +48,9 @@ model OilSubmission {
   id            String       @id @default(uuid())
   userId        String
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String       @default("")
+  accountNumber String       @default("")
+  phoneNumber   String       @default("")
   quantity      Float
   location      String       @db.Text
   pickupMethod  PickupMethod
@@ -54,6 +58,17 @@ model OilSubmission {
   status        OilStatus    @default(PENDING)
   priceEstimate Float
   createdAt     DateTime     @default(now())
+}
+
+model OilPrice {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  pricePerLiter Float
+  minVolume   Float    @default(0)
+  maxVolume   Float    @default(999999)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Product {
@@ -73,6 +88,9 @@ model Product {
   aromaOptions      String[]    @default([])
   containerOptions  String[]    @default([])
   decorationOptions String[]    @default([])
+  aromaPrices       Json        @default("{}")
+  containerPrices   Json        @default("{}")
+  decorationPrices  Json        @default("{}")
   giftCardAvailable Boolean     @default(false)
   customBuild       Boolean     @default(false)
   createdAt         DateTime    @default(now())

@@ -10,6 +10,9 @@ import { formatCurrency } from "@/lib/utils";
 type AdminOilSubmission = {
   id: string;
   quantity: number;
+  name: string;
+  accountNumber: string;
+  phoneNumber: string;
   location: string;
   pickupMethod: "PICKUP" | "DROPOFF";
   schedule: Date;
@@ -62,7 +65,10 @@ export function AdminOilManager({ submissions }: { submissions: AdminOilSubmissi
         <div key={item.id} className="rounded-lg bg-white/70 p-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
             <div>
-              <p className="font-semibold">{item.quantity} L minyak jelantah</p>
+              <p className="font-semibold">{item.name} - {item.quantity} L</p>
+              <p className="text-sm text-stone-600">
+                HP: {item.phoneNumber} | Rek: {item.accountNumber}
+              </p>
               <p className="text-sm text-stone-600">
                 {item.location} - {formatCurrency(item.priceEstimate)}
               </p>

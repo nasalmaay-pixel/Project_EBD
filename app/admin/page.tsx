@@ -2,6 +2,7 @@ import { Boxes, CalendarDays, ClipboardList, CreditCard, LineChart, PackageCheck
 import type { LucideIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import { AdminOilManager } from "@/components/admin-oil-manager";
+import { AdminOilPriceManager } from "@/components/admin-oil-price-manager";
 import { AdminOrderManager } from "@/components/admin-order-manager";
 import { AdminProductManager } from "@/components/admin-product-manager";
 import { LogoutButton } from "@/components/logout-button";
@@ -25,7 +26,7 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  const [productRows, orders, oilSubmissions, userCount] = await Promise.all([
+  const [productRows, orders, oilSubmissions, userCount, oilPrices] = await Promise.all([
     prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.order.findMany({
       include: { user: true, items: true },
@@ -36,6 +37,9 @@ export default async function AdminPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.user.count(),
+    prisma.oilPrice.findMany({
+      orderBy: { minVolume: "asc" },
+    }),
   ]);
 
   const products = productRows.map(productFromDb);
@@ -64,8 +68,8 @@ export default async function AdminPage() {
     })),
     ...oilSubmissions.slice(0, 4).map((item) => ({
       date: item.schedule,
-      title: `${item.quantity} L oil ${item.pickupMethod.toLowerCase()}`,
-      meta: item.location,
+      title: `${item.name} - ${item.quantity} L oil ${item.pickupMethod.toLowerCase()}`,
+      meta: item.phoneNumber,
     })),
   ].sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date))).slice(0, 6);
   const stats: { Icon: LucideIcon; label: string; value: number }[] = [
@@ -182,10 +186,11 @@ export default async function AdminPage() {
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <h2 className="font-display text-3xl font-bold">Manage orders</h2>
+              <h2 className="font-display text-3xl font-bold">Manage oil price tiers</h2>
+              <p className="text-sm text-stone-600">Configure pricing for jelantah pay</p>
             </CardHeader>
             <CardContent>
-              <AdminOrderManager orders={orders} />
+              <AdminOilPriceManager prices={oilPrices} />
             </CardContent>
           </Card>
           <Card>

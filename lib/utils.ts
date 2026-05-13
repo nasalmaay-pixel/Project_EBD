@@ -13,7 +13,22 @@ export function formatCurrency(value: number) {
   }).format(value);
 }
 
-export function estimateOilPrice(liters: number) {
+export type OilPriceTier = {
+  pricePerLiter: number;
+  minVolume: number;
+  maxVolume: number;
+};
+
+export function estimateOilPrice(liters: number, priceTiers?: OilPriceTier[]) {
+  if (priceTiers && priceTiers.length > 0) {
+    const tier = priceTiers.find(
+      (t) => liters >= t.minVolume && liters <= t.maxVolume,
+    );
+    if (tier) {
+      return Math.round(liters * tier.pricePerLiter);
+    }
+  }
+  // Fallback to static calculation
   const baseRate = 5200;
   const volumeBonus = liters >= 25 ? 1.12 : liters >= 10 ? 1.06 : 1;
   return Math.round(liters * baseRate * volumeBonus);

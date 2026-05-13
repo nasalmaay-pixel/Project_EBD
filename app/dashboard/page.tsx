@@ -68,7 +68,7 @@ export default async function DashboardPage() {
         </div>
 
         {stats.length ? (
-        <div className="mt-10 grid gap-4 md:grid-cols-5">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 md:grid-cols-5">
           {stats.map(({ Icon, label, value }) => (
             <Card key={label}>
               <CardHeader>
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
               {oilSubmissions.length ? oilSubmissions.map((item) => (
                 <div key={`${item.location}-${item.schedule}`} className="rounded-lg bg-white/70 p-4">
                   <div className="flex items-center justify-between gap-4">
-                    <p className="font-semibold">{item.location}</p>
+                    <p className="font-semibold">{item.name || item.location}</p>
                     <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
                       {item.status}
                     </span>

@@ -13,6 +13,9 @@ export type ProductSeed = {
   rating: number;
   leadTime: string;
   variants: ProductVariants;
+  aromaPrices: Record<string, number>;
+  containerPrices: Record<string, number>;
+  decorationPrices: Record<string, number>;
   giftCardAvailable: boolean;
   customBuild?: boolean;
 };
@@ -42,6 +45,9 @@ export type ProductRecord = {
   aromaOptions: string[];
   containerOptions: string[];
   decorationOptions: string[];
+  aromaPrices?: Record<string, number>;
+  containerPrices?: Record<string, number>;
+  decorationPrices?: Record<string, number>;
   giftCardAvailable: boolean;
   customBuild: boolean;
 };
@@ -76,6 +82,9 @@ export const products: ProductSeed[] = [
       containers: ["Clear glass jar", "Amber glass jar", "Matte cream tin"],
       decorations: ["Dried orange", "Cinnamon stick", "Gold wax seal"],
     },
+    aromaPrices: {},
+    containerPrices: {},
+    decorationPrices: {},
     giftCardAvailable: true,
   },
   {
@@ -99,6 +108,9 @@ export const products: ProductSeed[] = [
       containers: ["Frosted glass jar", "Clear glass jar", "Mini travel tin"],
       decorations: ["Dried lemon slice", "Mint leaf stamp", "Natural twine"],
     },
+    aromaPrices: {},
+    containerPrices: {},
+    decorationPrices: {},
     giftCardAvailable: true,
   },
   {
@@ -121,6 +133,9 @@ export const products: ProductSeed[] = [
       containers: ["Smoked glass jar", "Stone ceramic cup", "Recycled glass tumbler"],
       decorations: ["Pressed fern", "Wood wick", "Cotton label"],
     },
+    aromaPrices: {},
+    containerPrices: {},
+    decorationPrices: {},
     giftCardAvailable: false,
   },
   {
@@ -144,6 +159,9 @@ export const products: ProductSeed[] = [
       containers: ["Amber glass jar", "Black glass jar", "Brass travel tin"],
       decorations: ["Wax seal", "Dried orange", "Velvet ribbon"],
     },
+    aromaPrices: {},
+    containerPrices: {},
+    decorationPrices: {},
     giftCardAvailable: true,
   },
   {
@@ -167,6 +185,9 @@ export const products: ProductSeed[] = [
       containers: ["Blush glass jar", "Clear glass jar", "Pearl ceramic cup"],
       decorations: ["Rose petals", "Baby breath", "Pink ribbon"],
     },
+    aromaPrices: {},
+    containerPrices: {},
+    decorationPrices: {},
     giftCardAvailable: true,
   },
   {
@@ -190,6 +211,9 @@ export const products: ProductSeed[] = [
       containers: ["Clear glass jar", "Amber glass jar", "Stone ceramic cup", "Matte black jar"],
       decorations: ["Dried flowers", "Wax seal", "Ribbon wrap", "Pressed leaves", "Minimal label only"],
     },
+    aromaPrices: {},
+    containerPrices: {},
+    decorationPrices: {},
     giftCardAvailable: true,
     customBuild: true,
   },
@@ -213,12 +237,37 @@ export function productToDbInput(product: ProductSeed) {
     aromaOptions: product.variants.aromas,
     containerOptions: product.variants.containers,
     decorationOptions: product.variants.decorations,
+    aromaPrices: product.aromaPrices,
+    containerPrices: product.containerPrices,
+    decorationPrices: product.decorationPrices,
     giftCardAvailable: product.giftCardAvailable,
     customBuild: product.customBuild ?? false,
   };
 }
 
-export function productFromDb(product: ProductRecord): ProductSeed {
+export function productFromDb(product: {
+  id: string;
+  name: string;
+  category: string;
+  aroma: string;
+  description: string;
+  price: number;
+  promoLabel?: string | null;
+  promoDiscount?: number | null;
+  stock: number;
+  imageUrl: string;
+  imageAlt: string;
+  rating: number;
+  leadTime: string;
+  aromaOptions: string[];
+  containerOptions: string[];
+  decorationOptions: string[];
+  aromaPrices?: Record<string, number> | unknown;
+  containerPrices?: Record<string, number> | unknown;
+  decorationPrices?: Record<string, number> | unknown;
+  giftCardAvailable: boolean;
+  customBuild?: boolean;
+}): ProductSeed {
   const category = productCategories.includes(product.category as ProductCategory)
     ? (product.category as ProductCategory)
     : "Signature";
@@ -242,6 +291,9 @@ export function productFromDb(product: ProductRecord): ProductSeed {
       containers: product.containerOptions.length ? product.containerOptions : ["Clear glass jar"],
       decorations: product.decorationOptions.length ? product.decorationOptions : ["Minimal label only"],
     },
+    aromaPrices: (typeof product.aromaPrices === 'object' && product.aromaPrices !== null) ? product.aromaPrices as Record<string, number> : {},
+    containerPrices: (typeof product.containerPrices === 'object' && product.containerPrices !== null) ? product.containerPrices as Record<string, number> : {},
+    decorationPrices: (typeof product.decorationPrices === 'object' && product.decorationPrices !== null) ? product.decorationPrices as Record<string, number> : {},
     giftCardAvailable: product.giftCardAvailable,
     customBuild: product.customBuild,
   };
