@@ -47,7 +47,7 @@ export default async function DashboardPage() {
   const stats: { Icon: LucideIcon; label: string; value: string; rawValue: number }[] = [
     { Icon: Wallet, label: "Oil earnings", value: formatCurrency(earnings), rawValue: earnings },
     { Icon: Truck, label: "Active pickups", value: `${oilSubmissions.length}`, rawValue: oilSubmissions.length },
-    { Icon: Package, label: "Buyer orders", value: `${orders.length}`, rawValue: orders.length },
+    { Icon: Package, label: "Orders", value: `${orders.length}`, rawValue: orders.length },
     { Icon: CreditCard, label: "Waiting payment", value: `${waitingPayments}`, rawValue: waitingPayments },
     { Icon: Gift, label: "Circular points", value: `${user.points}`, rawValue: user.points },
   ].filter((stat) => stat.rawValue > 0);

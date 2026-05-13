@@ -70,7 +70,7 @@ export default async function AdminPage() {
   ].sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date))).slice(0, 6);
   const stats: { Icon: LucideIcon; label: string; value: number }[] = [
     { Icon: Boxes, label: "Products", value: products.length },
-    { Icon: PackageCheck, label: "Orders", value: orders.length },
+    { Icon: PackageCheck, label: "Total Orders", value: orders.length },
     { Icon: ClipboardList, label: "Oil submissions", value: oilSubmissions.length },
     { Icon: Users, label: "Users", value: userCount },
   ].filter((stat) => stat.value > 0);

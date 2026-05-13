@@ -33,8 +33,6 @@ export default function SellOilPage() {
   const quantityValue = useMemo(() => parseOilQuantity(quantity), [quantity]);
   const estimate = useMemo(() => estimateOilPrice(quantityValue), [quantityValue]);
   const highlights: { Icon: LucideIcon; title: string; body: string }[] = [
-    { Icon: MapPin, title: "Coverage", body: "Pickup or drop-off" },
-    { Icon: CalendarClock, title: "Tracking", body: "Requested to completed" },
     { Icon: Wallet, title: "Estimate", body: "Rp5.200/L + bonus" },
   ];
 
