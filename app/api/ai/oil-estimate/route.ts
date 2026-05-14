@@ -26,16 +26,39 @@ function parseJson(text: string) {
   }
 }
 
-function demoEstimate(image: string) {
-  const seed = image.length;
-  const liters = Number((4 + (seed % 180) / 10).toFixed(1));
-
+function demoEstimate() {
   return {
-    liters,
-    confidence: 62,
-    note: "Demo estimate. Add GEMINI_API_KEY to enable Gemini image analysis.",
+    liters: 5,
+    confidence: 50,
+    note: "Demo estimate. Gemini API akan digunakan bila tersedia.",
     source: "demo",
   };
+}
+
+export async function GET() {
+  const apiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY;
+
+  if (!apiKey) {
+    return NextResponse.json({ error: "No API key found" }, { status: 400 });
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
+  try {
+    const models = await ai.models.list({ config: { pageSize: 50 } });
+    const modelNames: string[] = [];
+
+    for await (const model of models) {
+      if (model.name) {
+        modelNames.push(model.name);
+      }
+    }
+
+    return NextResponse.json({ models: modelNames });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to list models";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -46,25 +69,49 @@ export async function POST(request: Request) {
   }
 
   const apiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY;
-  const model = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
   const image = parsed.data.image.replace(/^data:[^;]+;base64,/, "");
 
   if (!apiKey) {
-    return NextResponse.json(demoEstimate(image));
+    return NextResponse.json(demoEstimate());
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  let response: Awaited<ReturnType<typeof ai.models.generateContent>>;
 
+  // List available models first
   try {
-    response = await ai.models.generateContent({
-      model,
+    const modelsList = await ai.models.list({ config: { pageSize: 50 } });
+    const availableModels: string[] = [];
+
+    for await (const model of modelsList) {
+      if (model.name) {
+        availableModels.push(model.name);
+      }
+    }
+
+    console.log("Available models:", availableModels);
+
+    // Try gemini-2.5-flash first, fallback to available models
+    let modelToUse = "gemini-2.5-flash";
+    if (!availableModels.some(m => m.includes("gemini-2.5-flash"))) {
+      const flashModel = availableModels.find(m => m.includes("flash"));
+      if (flashModel) {
+        modelToUse = flashModel;
+        console.log("gemini-2.5-flash not available, using:", modelToUse);
+      }
+    }
+
+    const response = await ai.models.generateContent({
+      model: modelToUse,
       contents: [
         {
           parts: [
             {
-              text:
-                "You estimate used cooking oil volume from a photo. Return only JSON with liters as a number, confidence as 0-100, and note as one short Indonesian sentence. If the photo is unclear, still provide the best numeric estimate.",
+              text: `Kamu adalah AI yang mengestimasi volume minyak jelantah dari foto.
+Kembalikan HANYA JSON dengan format:
+{"liters": <angka_desimal>, "confidence": <0-100>, "note": "< satu kalimat penjelasan dalam Bahasa Indonesia >"}
+
+Jika foto tidak jelas atau bukan minyak, tetap berikan estimasi terbaik.
+Contoh response: {"liters": 3.5, "confidence": 75, "note": "Minyak terlihat dalam wadah plastic transparan, estimasi 3.5 liter."}`,
             },
             {
               inlineData: {
@@ -77,33 +124,31 @@ export async function POST(request: Request) {
       ],
       config: {
         responseMimeType: "application/json",
-        temperature: 0.2,
+        temperature: 0.3,
       },
+    });
+
+    const text = response.text ?? "";
+    console.log("Raw Gemini response:", text);
+
+    const estimate = parseJson(text);
+    console.log("Parsed estimate:", estimate);
+
+    if (!estimate?.liters) {
+      console.log("No liters found in estimate, returning demo");
+      return NextResponse.json(demoEstimate());
+    }
+
+    return NextResponse.json({
+      liters: Number(Math.max(0.5, estimate.liters).toFixed(1)),
+      confidence: Math.round(Math.min(Math.max(estimate.confidence ?? 70, 0), 100)),
+      note: estimate.note ?? "Estimasi berhasil dibuat dari foto.",
+      source: "gemini",
+      modelUsed: modelToUse,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Gemini request failed";
-
-    return NextResponse.json(
-      {
-        error: "Gemini request failed",
-        detail: message,
-        source: "gemini",
-      },
-      { status: 502 },
-    );
+    console.error("Gemini API error:", message);
+    return NextResponse.json(demoEstimate());
   }
-
-  const text = response.text ?? "";
-  const estimate = parseJson(text);
-
-  if (!estimate?.liters) {
-    return NextResponse.json(demoEstimate(image));
-  }
-
-  return NextResponse.json({
-    liters: Number(Math.max(0.5, estimate.liters).toFixed(1)),
-    confidence: Math.round(Math.min(Math.max(estimate.confidence ?? 70, 0), 100)),
-    note: estimate.note ?? "Estimasi Gemini berdasarkan foto yang diunggah.",
-    source: "gemini",
-  });
 }

@@ -183,6 +183,18 @@ export default async function AdminPage() {
           <AdminProductManager products={products} />
         </div>
 
+        <div className="mt-10">
+          <Card>
+            <CardHeader>
+              <h2 className="font-display text-3xl font-bold">Manage orders</h2>
+              <p className="text-sm text-stone-600">Update order status and track deliveries</p>
+            </CardHeader>
+            <CardContent>
+              <AdminOrderManager orders={orders} />
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>

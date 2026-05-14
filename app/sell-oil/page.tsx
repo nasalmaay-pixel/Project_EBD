@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Camera, CalendarClock, CheckCircle2, ImageUp, MapPin, Sparkles, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -9,7 +9,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { estimateOilPrice, formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+
+type OilPriceTier = {
+  id: string;
+  name: string;
+  pricePerLiter: number;
+  minVolume: number;
+  maxVolume: number;
+};
+
+const paymentMethods = [
+  { value: "BANK_TRANSFER", label: "Bank Transfer (BCA, Mandiri, BNI, BRI)" },
+  { value: "E_WALLET", label: "E-Wallet (GoPay, OVO, Dana, ShopeePay)" },
+  { value: "QRIS", label: "QRIS (Semua Bank & E-Wallet)" },
+];
+
+const timeSlots = [
+  { value: "08:00", label: "08:00 - 10:00" },
+  { value: "10:00", label: "10:00 - 12:00" },
+  { value: "13:00", label: "13:00 - 15:00" },
+  { value: "15:00", label: "15:00 - 17:00" },
+  { value: "17:00", label: "17:00 - 19:00" },
+];
 
 export default function SellOilPage() {
   const [quantity, setQuantity] = useState("12");
@@ -28,13 +50,25 @@ export default function SellOilPage() {
     estimate: number;
     points: number;
   } | null>(null);
+  const [priceTiers, setPriceTiers] = useState<OilPriceTier[]>([]);
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const quantityValue = useMemo(() => parseOilQuantity(quantity), [quantity]);
-  const estimate = useMemo(() => estimateOilPrice(quantityValue), [quantityValue]);
-  const highlights: { Icon: LucideIcon; title: string; body: string }[] = [
-    { Icon: Wallet, title: "Estimate", body: "Rp5.200/L + bonus" },
-  ];
+  const estimate = useMemo(() => calculateEstimate(quantityValue, priceTiers), [quantityValue, priceTiers]);
+  const highlights: { Icon: LucideIcon; title: string; body: string }[] = [];
+
+  useEffect(() => {
+    fetch("/api/oil-prices")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.prices && Array.isArray(data.prices)) {
+          setPriceTiers(data.prices);
+        }
+      })
+      .catch(() => {
+        // Silently fail, use fallback calculation
+      });
+  }, []);
 
   async function submit(formData: FormData) {
     const payload = {
@@ -44,6 +78,7 @@ export default function SellOilPage() {
       location: formData.get("location"),
       quantity: parseOilQuantity(formData.get("quantity")),
       pickupMethod: formData.get("pickupMethod"),
+      paymentMethod: formData.get("paymentMethod"),
       schedule: formData.get("schedule"),
     };
 
@@ -57,7 +92,7 @@ export default function SellOilPage() {
     setSubmissionResult({
       location: String(payload.location ?? ""),
       quantity: payload.quantity,
-      estimate: estimateOilPrice(payload.quantity),
+      estimate: calculateEstimate(payload.quantity, priceTiers),
       points: result?.points ?? Math.max(Math.floor(payload.quantity), 1),
     });
   }
@@ -115,6 +150,24 @@ export default function SellOilPage() {
     });
   }
 
+  function getMinScheduleDate() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(8, 0, 0, 0);
+    return tomorrow;
+  }
+
+  function getMaxScheduleDate() {
+    const future = new Date();
+    future.setDate(future.getDate() + 30);
+    future.setHours(20, 0, 0, 0);
+    return future;
+  }
+
+  function formatScheduleDate(date: Date) {
+    return date.toISOString().split("T")[0];
+  }
+
   return (
     <main className="min-h-screen px-4 pb-20 pt-32">
       <SiteNav />
@@ -125,7 +178,7 @@ export default function SellOilPage() {
             Turn jelantah into tracked earnings.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-stone-600">
-            Submit location, volume, pickup method, and schedule. CandleX estimates pricing with static volume-based logic and moves your pickup through four clear statuses.
+            Submit location, volume, pickup method, and schedule. CandleX estimates pricing with dynamic volume-based logic and moves your pickup through three clear statuses.
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {highlights.map(({ Icon, title, body }) => (
@@ -140,6 +193,17 @@ export default function SellOilPage() {
               </Card>
             ))}
           </div>
+
+          {priceTiers.length > 0 && (
+            <div className="mt-6 rounded-lg border border-[#d78b37]/30 bg-amber-50/50 p-4">
+              <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[#9b5b24]">Price tiers</h3>
+              <div className="mt-3 space-y-1 text-sm text-stone-600">
+                {priceTiers.map((tier) => (
+                  <p key={tier.id}>{tier.minVolume}-{tier.maxVolume} L: {formatCurrency(tier.pricePerLiter)}/L</p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <form action={submit} className="glass rounded-lg p-6">
@@ -230,7 +294,17 @@ export default function SellOilPage() {
               <Input name="phoneNumber" type="tel" placeholder="081234567890" required />
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-semibold">Account number (bank/e-wallet)</span>
+              <span className="text-sm font-semibold">Payment method</span>
+              <Select name="paymentMethod" defaultValue="QRIS">
+                {paymentMethods.map((method) => (
+                  <option key={method.value} value={method.value}>
+                    {method.label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold">Account number</span>
               <Input name="accountNumber" placeholder="1234567890" required />
             </label>
             <label className="space-y-2">
@@ -254,15 +328,33 @@ export default function SellOilPage() {
               <label className="space-y-2">
                 <span className="text-sm font-semibold">Pickup method</span>
                 <Select name="pickupMethod" defaultValue="PICKUP">
-                  <option value="PICKUP">Pickup</option>
-                  <option value="DROPOFF">Drop-off</option>
+                  <option value="PICKUP">Pickup (kami datang)</option>
+                  <option value="DROPOFF">Drop-off (antar sendiri)</option>
                 </Select>
               </label>
             </div>
-            <label className="space-y-2">
-              <span className="text-sm font-semibold">Schedule</span>
-              <Input name="schedule" type="datetime-local" required />
-            </label>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">Schedule date</span>
+                <Input
+                  name="scheduleDate"
+                  type="date"
+                  min={formatScheduleDate(getMinScheduleDate())}
+                  max={formatScheduleDate(getMaxScheduleDate())}
+                  required
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">Schedule time slot</span>
+                <Select name="schedule">
+                  {timeSlots.map((slot) => (
+                    <option key={slot.value} value={slot.value}>
+                      {slot.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+            </div>
             <div className="rounded-lg bg-stone-950 p-5 text-amber-50 pointer-events-none select-none">
               <p className="text-sm uppercase tracking-[0.22em] text-amber-200">Price estimate</p>
               <p className="mt-2 font-display text-4xl font-bold">{formatCurrency(estimate)}</p>
@@ -283,6 +375,24 @@ export default function SellOilPage() {
 function parseOilQuantity(value: FormDataEntryValue | string | null) {
   const quantity = Number(String(value ?? "").replace(",", "."));
   return Number.isFinite(quantity) ? quantity : 0;
+}
+
+function calculateEstimate(liters: number, priceTiers: OilPriceTier[]) {
+  if (liters <= 0) return 0;
+
+  if (priceTiers.length > 0) {
+    const tier = priceTiers.find(
+      (t) => liters >= t.minVolume && liters <= t.maxVolume,
+    );
+    if (tier) {
+      return Math.round(liters * tier.pricePerLiter);
+    }
+  }
+
+  // Fallback to static calculation
+  const baseRate = 5200;
+  const volumeBonus = liters >= 25 ? 1.12 : liters >= 10 ? 1.06 : 1;
+  return Math.round(liters * baseRate * volumeBonus);
 }
 
 function PickupOverlay({
@@ -314,7 +424,7 @@ function PickupOverlay({
             <span className="font-semibold">Points earned:</span> {result.points}
           </p>
           <p>
-            <span className="font-semibold">Status:</span> PENDING
+            <span className="font-semibold">Status:</span> PENDING - Menunggu konfirmasi pembayaran
           </p>
         </div>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
