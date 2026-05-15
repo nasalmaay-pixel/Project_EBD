@@ -60,6 +60,7 @@ export default function SellOilPage() {
     estimate: number;
     points: number;
   } | null>(null);
+  const [scheduleError, setScheduleError] = useState("");
   const [priceTiers, setPriceTiers] = useState<OilPriceTier[]>([]);
   const [schedules, setSchedules] = useState<PickupSchedule[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -89,6 +90,34 @@ export default function SellOilPage() {
   }, []);
 
   async function submit(formData: FormData) {
+    const scheduleDateRaw = formData.get("scheduleDate") as string;
+    const scheduleTimeSlot = formData.get("schedule") as string;
+
+    // Validate date against schedule
+    if (scheduleDateRaw) {
+      const date = new Date(scheduleDateRaw);
+      const dayOfWeek = date.getDay();
+      const schedule = schedules.find(s => s.dayOfWeek === dayOfWeek && s.isActive);
+
+      if (!schedule) {
+        const dayName = DAYS[dayOfWeek];
+        setScheduleError(`Pickup tidak tersedia di hari ${dayName}. Pilih tanggal lain.`);
+        return;
+      }
+
+      // Check if time slot is within schedule hours
+      const slotHour = parseInt(scheduleTimeSlot?.split(":")[0] || "10", 10);
+      const startHour = parseInt(schedule.startTime.split(":")[0], 10);
+      const endHour = parseInt(schedule.endTime.split(":")[0], 10);
+
+      if (slotHour < startHour || slotHour >= endHour) {
+        setScheduleError(`Waktu pickup harus antara ${schedule.startTime} - ${schedule.endTime}.`);
+        return;
+      }
+    }
+
+    setScheduleError("");
+
     const payload = {
       name: formData.get("name"),
       phoneNumber: formData.get("phoneNumber"),
@@ -97,7 +126,8 @@ export default function SellOilPage() {
       quantity: parseOilQuantity(formData.get("quantity")),
       pickupMethod: formData.get("pickupMethod"),
       paymentMethod: formData.get("paymentMethod"),
-      schedule: formData.get("schedule"),
+      scheduleDate: scheduleDateRaw,
+      schedule: scheduleTimeSlot,
     };
 
     const response = await fetch("/api/oil-submissions", {
@@ -113,6 +143,7 @@ export default function SellOilPage() {
       estimate: calculateEstimate(payload.quantity, priceTiers),
       points: result?.points ?? Math.max(Math.floor(payload.quantity), 1),
     });
+    setScheduleError("");
   }
 
   async function predictOil(file: File | null) {
@@ -398,8 +429,14 @@ export default function SellOilPage() {
                   min={formatScheduleDate(getMinScheduleDate())}
                   max={formatScheduleDate(getMaxScheduleDate())}
                   required
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    setScheduleError("");
+                  }}
                 />
+                {scheduleError && (
+                  <p className="text-sm text-red-500">{scheduleError}</p>
+                )}
               </label>
               <label className="space-y-2">
                 <span className="text-sm font-semibold">Schedule time slot</span>
