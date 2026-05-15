@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AdminOilManager } from "@/components/admin-oil-manager";
 import { AdminOilPriceManager } from "@/components/admin-oil-price-manager";
 import { AdminOrderManager } from "@/components/admin-order-manager";
+import { AdminPickupScheduleManager } from "@/components/admin-pickup-schedule-manager";
 import { AdminProductManager } from "@/components/admin-product-manager";
 import { LogoutButton } from "@/components/logout-button";
 import { SiteNav } from "@/components/site-nav";
@@ -26,7 +27,7 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  const [productRows, orders, oilSubmissions, userCount, oilPrices] = await Promise.all([
+  const [productRows, orders, oilSubmissions, userCount, oilPrices, pickupSchedules] = await Promise.all([
     prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.order.findMany({
       include: { user: true, items: true },
@@ -39,6 +40,9 @@ export default async function AdminPage() {
     prisma.user.count(),
     prisma.oilPrice.findMany({
       orderBy: { minVolume: "asc" },
+    }),
+    prisma.pickupSchedule.findMany({
+      orderBy: { dayOfWeek: "asc" },
     }),
   ]);
 
@@ -207,10 +211,11 @@ export default async function AdminPage() {
           </Card>
           <Card>
             <CardHeader>
-              <h2 className="font-display text-3xl font-bold">Manage oil</h2>
+              <h2 className="font-display text-3xl font-bold">Manage pickup schedule</h2>
+              <p className="text-sm text-stone-600">Set available days and hours for oil pickup</p>
             </CardHeader>
             <CardContent>
-              <AdminOilManager submissions={oilSubmissions} />
+              <AdminPickupScheduleManager schedules={pickupSchedules} />
             </CardContent>
           </Card>
         </div>

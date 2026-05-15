@@ -20,10 +20,20 @@ type OilPriceTier = {
 };
 
 const paymentMethods = [
-  { value: "BANK_TRANSFER", label: "Bank Transfer (BCA, Mandiri, BNI, BRI)" },
-  { value: "E_WALLET", label: "E-Wallet (GoPay, OVO, Dana, ShopeePay)" },
-  { value: "QRIS", label: "QRIS (Semua Bank & E-Wallet)" },
+  { value: "BANK_TRANSFER", label: "Bank Transfer" },
+  { value: "E_WALLET", label: "E-Wallet" },
+  { value: "QRIS", label: "QRIS" },
 ];
+
+const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+type PickupSchedule = {
+  id: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+};
 
 const timeSlots = [
   { value: "08:00", label: "08:00 - 10:00" },
@@ -51,23 +61,31 @@ export default function SellOilPage() {
     points: number;
   } | null>(null);
   const [priceTiers, setPriceTiers] = useState<OilPriceTier[]>([]);
+  const [schedules, setSchedules] = useState<PickupSchedule[]>([]);
+  const [selectedDate, setSelectedDate] = useState("");
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const availableTimeSlots = useMemo(() => getTimeSlotsForDate(selectedDate), [selectedDate, schedules]);
   const quantityValue = useMemo(() => parseOilQuantity(quantity), [quantity]);
   const estimate = useMemo(() => calculateEstimate(quantityValue, priceTiers), [quantityValue, priceTiers]);
   const highlights: { Icon: LucideIcon; title: string; body: string }[] = [];
 
   useEffect(() => {
-    fetch("/api/oil-prices")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.prices && Array.isArray(data.prices)) {
-          setPriceTiers(data.prices);
-        }
-      })
-      .catch(() => {
-        // Silently fail, use fallback calculation
-      });
+    Promise.all([
+      fetch("/api/oil-prices"),
+      fetch("/api/pickup-schedules"),
+    ]).then(([pricesRes, schedulesRes]) =>
+      Promise.all([pricesRes.json(), schedulesRes.json()])
+    ).then(([pricesData, schedulesData]) => {
+      if (pricesData.prices && Array.isArray(pricesData.prices)) {
+        setPriceTiers(pricesData.prices);
+      }
+      if (schedulesData.schedules && Array.isArray(schedulesData.schedules)) {
+        setSchedules(schedulesData.schedules);
+      }
+    }).catch(() => {
+      // Silently fail, use fallback calculation
+    });
   }, []);
 
   async function submit(formData: FormData) {
@@ -150,18 +168,56 @@ export default function SellOilPage() {
     });
   }
 
-  function getMinScheduleDate() {
+  function getNextAvailableDate() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(8, 0, 0, 0);
+
+    // Find the next day that has an active schedule
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(tomorrow);
+      date.setDate(tomorrow.getDate() + i);
+      const dayOfWeek = date.getDay();
+      const hasSchedule = schedules.some(s => s.dayOfWeek === dayOfWeek && s.isActive);
+      if (hasSchedule) {
+        return date;
+      }
+    }
+
+    // Fallback to tomorrow if no schedules exist
     return tomorrow;
+  }
+
+  function isDateAvailable(date: Date) {
+    const dayOfWeek = date.getDay();
+    return schedules.some(s => s.dayOfWeek === dayOfWeek && s.isActive);
+  }
+
+  function getMinScheduleDate() {
+    return getNextAvailableDate();
   }
 
   function getMaxScheduleDate() {
     const future = new Date();
-    future.setDate(future.getDate() + 30);
-    future.setHours(20, 0, 0, 0);
+    future.setDate(future.getDate() + 60);
     return future;
+  }
+
+  function getTimeSlotsForDate(dateStr: string) {
+    if (!dateStr) return timeSlots;
+
+    const date = new Date(dateStr);
+    const dayOfWeek = date.getDay();
+    const schedule = schedules.find(s => s.dayOfWeek === dayOfWeek);
+
+    if (!schedule) return timeSlots;
+
+    // Filter time slots based on schedule hours
+    return timeSlots.filter(slot => {
+      const slotHour = parseInt(slot.value.split(":")[0], 10);
+      const startHour = parseInt(schedule.startTime.split(":")[0], 10);
+      const endHour = parseInt(schedule.endTime.split(":")[0], 10);
+      return slotHour >= startHour && slotHour < endHour;
+    });
   }
 
   function formatScheduleDate(date: Date) {
@@ -342,12 +398,13 @@ export default function SellOilPage() {
                   min={formatScheduleDate(getMinScheduleDate())}
                   max={formatScheduleDate(getMaxScheduleDate())}
                   required
+                  onChange={(e) => setSelectedDate(e.target.value)}
                 />
               </label>
               <label className="space-y-2">
                 <span className="text-sm font-semibold">Schedule time slot</span>
                 <Select name="schedule">
-                  {timeSlots.map((slot) => (
+                  {availableTimeSlots.map((slot) => (
                     <option key={slot.value} value={slot.value}>
                       {slot.label}
                     </option>

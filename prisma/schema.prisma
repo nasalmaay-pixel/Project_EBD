@@ -30,6 +30,18 @@ enum OrderStatus {
   COMPLETED
 }
 
+model PickupSchedule {
+  id         String   @id @default(uuid())
+  dayOfWeek  Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime  String   // "08:00"
+  endTime    String   // "17:00"
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([dayOfWeek])
+}
+
 model User {
   id             String          @id @default(uuid())
   name           String
