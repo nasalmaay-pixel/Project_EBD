@@ -27,7 +27,7 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  const [productRows, orders, oilSubmissions, userCount, oilPrices, pickupSchedules] = await Promise.all([
+  const [productRows, orders, oilSubmissions, userCount, oilPrices, pickupSchedules, blockedDates] = await Promise.all([
     prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.order.findMany({
       include: { user: true, items: true },
@@ -44,6 +44,7 @@ export default async function AdminPage() {
     prisma.pickupSchedule.findMany({
       orderBy: { dayOfWeek: "asc" },
     }),
+    prisma.blockedDate.findMany(),
   ]);
 
   const products = productRows.map(productFromDb);
@@ -215,7 +216,7 @@ export default async function AdminPage() {
               <p className="text-sm text-stone-600">Set available days and hours for oil pickup</p>
             </CardHeader>
             <CardContent>
-              <AdminPickupScheduleManager schedules={pickupSchedules} />
+              <AdminPickupScheduleManager schedules={pickupSchedules} blockedDates={blockedDates} />
             </CardContent>
           </Card>
         </div>

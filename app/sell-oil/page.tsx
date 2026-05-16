@@ -63,26 +63,66 @@ export default function SellOilPage() {
   const [scheduleError, setScheduleError] = useState("");
   const [priceTiers, setPriceTiers] = useState<OilPriceTier[]>([]);
   const [schedules, setSchedules] = useState<PickupSchedule[]>([]);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const availableTimeSlots = useMemo(() => getTimeSlotsForDate(selectedDate), [selectedDate, schedules]);
   const quantityValue = useMemo(() => parseOilQuantity(quantity), [quantity]);
   const estimate = useMemo(() => calculateEstimate(quantityValue, priceTiers), [quantityValue, priceTiers]);
   const highlights: { Icon: LucideIcon; title: string; body: string }[] = [];
+
+  // Native date input min/max based on schedules
+  const minDate = useMemo(() => {
+    const start = new Date();
+    start.setDate(start.getDate() + 1);
+    const end = new Date();
+    end.setDate(end.getDate() + 60);
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const date = new Date(d);
+      if (isDateAvailable(date)) {
+        return formatScheduleDate(date);
+      }
+    }
+    return formatScheduleDate(start);
+  }, [schedules, blockedDates]);
+
+  const maxDate = useMemo(() => {
+    const end = new Date();
+    end.setDate(end.getDate() + 60);
+    return formatScheduleDate(end);
+  }, []);
+
+  // Check if selected date is valid
+  const isSelectedDateValid = useMemo(() => {
+    if (!selectedDate) return true;
+    const date = new Date(selectedDate);
+    return isDateAvailable(date);
+  }, [selectedDate, schedules, blockedDates]);
+
+  const canSubmit = useMemo(() => {
+    return selectedDate && isSelectedDateValid && !scheduleError;
+  }, [selectedDate, isSelectedDateValid, scheduleError]);
+
+  // Get time slots for selected date
+  const availableTimeSlots = useMemo(() => getTimeSlotsForDate(selectedDate), [selectedDate, schedules]);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/oil-prices"),
       fetch("/api/pickup-schedules"),
-    ]).then(([pricesRes, schedulesRes]) =>
-      Promise.all([pricesRes.json(), schedulesRes.json()])
-    ).then(([pricesData, schedulesData]) => {
+      fetch("/api/admin/pickup-schedules/blocked-dates"),
+    ]).then(([pricesRes, schedulesRes, blockedRes]) =>
+      Promise.all([pricesRes.json(), schedulesRes.json(), blockedRes.json()])
+    ).then(([pricesData, schedulesData, blockedData]) => {
       if (pricesData.prices && Array.isArray(pricesData.prices)) {
         setPriceTiers(pricesData.prices);
       }
       if (schedulesData.schedules && Array.isArray(schedulesData.schedules)) {
         setSchedules(schedulesData.schedules);
+      }
+      if (blockedData.blockedDates && Array.isArray(blockedData.blockedDates)) {
+        setBlockedDates(blockedData.blockedDates.map((b: { date: string }) => b.date.split("T")[0]));
       }
     }).catch(() => {
       // Silently fail, use fallback calculation
@@ -219,8 +259,29 @@ export default function SellOilPage() {
   }
 
   function isDateAvailable(date: Date) {
+    const dateStr = date.toISOString().split("T")[0];
+    // Check if date is blocked
+    if (blockedDates.includes(dateStr)) {
+      return false;
+    }
+    // Check if day of week has active schedule
     const dayOfWeek = date.getDay();
     return schedules.some(s => s.dayOfWeek === dayOfWeek && s.isActive);
+  }
+
+  function getDisabledDates(): string[] {
+    const disabled: string[] = [];
+    const start = new Date();
+    start.setDate(start.getDate() + 1);
+    const end = new Date();
+    end.setDate(end.getDate() + 60);
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      if (!isDateAvailable(new Date(d))) {
+        disabled.push(d.toISOString().split("T")[0]);
+      }
+    }
+    return disabled;
   }
 
   function getMinScheduleDate() {
@@ -395,7 +456,7 @@ export default function SellOilPage() {
               <Input name="accountNumber" placeholder="1234567890" required />
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-semibold">Location</span>
+              <span className="text-sm font-semibold">Alamat</span>
               <Input name="location" placeholder="Jl. Kemang Raya, Jakarta Selatan" required />
             </label>
             <div className="grid gap-5 sm:grid-cols-2">
@@ -422,18 +483,23 @@ export default function SellOilPage() {
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <label className="space-y-2">
-                <span className="text-sm font-semibold">Schedule date</span>
+                <span className="text-sm font-semibold">Tanggal pickup</span>
                 <Input
                   name="scheduleDate"
                   type="date"
-                  min={formatScheduleDate(getMinScheduleDate())}
-                  max={formatScheduleDate(getMaxScheduleDate())}
-                  required
+                  min={minDate}
+                  max={maxDate}
+                  value={selectedDate}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
                     setScheduleError("");
                   }}
+                  className={!isSelectedDateValid ? "border-red-500" : ""}
+                  required
                 />
+                {!isSelectedDateValid && (
+                  <p className="text-sm text-red-500">Tanggal tidak tersedia. Pilih tanggal lain.</p>
+                )}
                 {scheduleError && (
                   <p className="text-sm text-red-500">{scheduleError}</p>
                 )}
@@ -453,7 +519,7 @@ export default function SellOilPage() {
               <p className="text-sm uppercase tracking-[0.22em] text-amber-200">Price estimate</p>
               <p className="mt-2 font-display text-4xl font-bold">{formatCurrency(estimate)}</p>
             </div>
-            <Button variant="warm" size="lg" type="submit">
+            <Button variant="warm" size="lg" type="submit" disabled={!canSubmit}>
               Request pickup
             </Button>
           </div>

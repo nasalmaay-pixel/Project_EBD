@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Bell,
   BookOpen,
-  Flame,
   LayoutDashboard,
   LogIn,
   Menu,
@@ -120,9 +119,11 @@ export function SiteNav() {
       <nav className="flex-1 rounded-3xl border border-white/65 bg-[#fffaf0]/75 px-4 py-3 shadow-lg shadow-stone-900/5 backdrop-blur-xl md:rounded-full">
         <div className="flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2 font-semibold text-stone-950">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-stone-950 text-amber-100">
-            <Flame size={18} />
-          </span>
+          <img
+            src="/images/logo.png"
+            alt="CandleX Logo"
+            className="h-9 w-9 rounded-full object-cover"
+          />
           <span>CandleX</span>
         </Link>
         <div className="hidden items-center gap-1 md:flex">
