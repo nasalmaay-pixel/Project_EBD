@@ -27,7 +27,7 @@ type PickupSchedule = {
 
 type BlockedDate = {
   id: string;
-  date: string;
+  date: string | Date;
   reason: string;
 };
 
@@ -193,7 +193,7 @@ export function AdminPickupScheduleManager({
             onChange={(e) => setNewBlockedReason(e.target.value)}
             className="flex-1"
           />
-          <Button type="button" onClick={addBlockedDate} variant="outline">
+          <Button type="button" onClick={addBlockedDate} variant="secondary">
             <Plus size={16} />
           </Button>
         </div>
