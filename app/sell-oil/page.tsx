@@ -71,8 +71,9 @@ export default function SellOilPage() {
   const estimate = useMemo(() => calculateEstimate(quantityValue, priceTiers), [quantityValue, priceTiers]);
   const highlights: { Icon: LucideIcon; title: string; body: string }[] = [];
 
-  // Native date input min/max based on schedules
-  const minDate = useMemo(() => {
+  // Generate available dates for dropdown (next 60 days)
+  const availableDates = useMemo(() => {
+    const dates: { value: string; label: string }[] = [];
     const start = new Date();
     start.setDate(start.getDate() + 1);
     const end = new Date();
@@ -80,25 +81,25 @@ export default function SellOilPage() {
 
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       const date = new Date(d);
+      const dateStr = date.toISOString().split("T")[0];
       if (isDateAvailable(date)) {
-        return formatScheduleDate(date);
+        const dayName = DAYS[date.getDay()];
+        const formattedDate = date.toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        dates.push({ value: dateStr, label: `${dayName}, ${formattedDate}` });
       }
     }
-    return formatScheduleDate(start);
+    return dates;
   }, [schedules, blockedDates]);
-
-  const maxDate = useMemo(() => {
-    const end = new Date();
-    end.setDate(end.getDate() + 60);
-    return formatScheduleDate(end);
-  }, []);
 
   // Check if selected date is valid
   const isSelectedDateValid = useMemo(() => {
     if (!selectedDate) return true;
-    const date = new Date(selectedDate);
-    return isDateAvailable(date);
-  }, [selectedDate, schedules, blockedDates]);
+    return availableDates.some(d => d.value === selectedDate);
+  }, [selectedDate, availableDates]);
 
   const canSubmit = useMemo(() => {
     return selectedDate && isSelectedDateValid && !scheduleError;
@@ -258,6 +259,15 @@ export default function SellOilPage() {
     return tomorrow;
   }
 
+  function getBlockedDatesInfo() {
+    if (blockedDates.length === 0) return null;
+    const blocked = blockedDates.map(d => {
+      const date = new Date(d);
+      return date.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+    }).join(", ");
+    return blocked;
+  }
+
   function isDateAvailable(date: Date) {
     const dateStr = date.toISOString().split("T")[0];
     // Check if date is blocked
@@ -350,6 +360,15 @@ export default function SellOilPage() {
                   <p key={tier.id}>{tier.minVolume}-{tier.maxVolume} L: {formatCurrency(tier.pricePerLiter)}/L</p>
                 ))}
               </div>
+            </div>
+          )}
+
+          {blockedDates.length > 0 && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50/50 p-4">
+              <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-red-600">Tanggal tidak tersedia</h3>
+              <p className="mt-2 text-sm text-stone-600">
+                Hari-hari berikut tidak tersedia untuk pickup: {getBlockedDatesInfo()}. Pilih tanggal lain dari dropdown.
+              </p>
             </div>
           )}
         </div>
@@ -484,19 +503,22 @@ export default function SellOilPage() {
             <div className="grid gap-5 sm:grid-cols-2">
               <label className="space-y-2">
                 <span className="text-sm font-semibold">Tanggal pickup</span>
-                <Input
+                <Select
                   name="scheduleDate"
-                  type="date"
-                  min={minDate}
-                  max={maxDate}
                   value={selectedDate}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
                     setScheduleError("");
                   }}
-                  className={!isSelectedDateValid ? "border-red-500" : ""}
                   required
-                />
+                >
+                  <option value="">Pilih tanggal...</option>
+                  {availableDates.map((date) => (
+                    <option key={date.value} value={date.value}>
+                      {date.label}
+                    </option>
+                  ))}
+                </Select>
                 {!isSelectedDateValid && (
                   <p className="text-sm text-red-500">Tanggal tidak tersedia. Pilih tanggal lain.</p>
                 )}
