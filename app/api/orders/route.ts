@@ -7,6 +7,9 @@ import { prisma } from "@/lib/prisma";
 
 const checkoutSchema = z.object({
   paymentMethod: z.enum(["QRIS", "BANK_TRANSFER", "E_WALLET"]).default("BANK_TRANSFER"),
+  expedition: z.string().default("JNE"),
+  shippingName: z.string().min(1, "Nama penerima diperlukan"),
+  shippingAddress: z.string().min(5, "Alamat diperlukan"),
   items: z.array(
     z.object({
       productId: z.string(),
@@ -63,6 +66,9 @@ export async function POST(request: Request) {
         paymentMethod: parsed.data.paymentMethod,
         paymentReference,
         paymentStatus: "WAITING_PAYMENT",
+        expedition: parsed.data.expedition,
+        shippingName: parsed.data.shippingName,
+        shippingAddress: parsed.data.shippingAddress,
         items: {
           create: parsed.data.items.map((item) => {
             const product = products.find((candidate) => candidate.id === item.productId);

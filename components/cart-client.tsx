@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Building2, CheckCircle2, Minus, Plus, QrCode, Trash2, WalletCards } from "lucide-react";
+import { Building2, CheckCircle2, Minus, Plus, QrCode, Trash2, Truck, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { ProductSeed, productHasPromo, productSalePrice } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -46,6 +48,15 @@ const paymentOptions = [
   },
 ] as const;
 
+const expeditionOptions = [
+  { value: "JNE", label: "JNE" },
+  { value: "J&T", label: "J&T Express" },
+  { value: "SI CEPAT", label: "SiCepat" },
+  { value: "NINJA", label: "Ninja Van" },
+  { value: "GOJEK", label: "GoSend" },
+  { value: "GRAB", label: "GrabExpress" },
+];
+
 export function readCart(): CartItem[] {
   if (typeof window === "undefined") {
     return [];
@@ -67,6 +78,9 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
     method: string;
     instruction: string;
   } | null>(null);
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientAddress, setRecipientAddress] = useState("");
+  const [expedition, setExpedition] = useState("JNE");
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
@@ -101,6 +115,16 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
   }
 
   async function checkout() {
+    if (!recipientName.trim() || !recipientAddress.trim()) {
+      setCheckoutResult({
+        reference: "Info required",
+        points: 0,
+        method: "Please fill in recipient name and address",
+        instruction: "",
+      });
+      return;
+    }
+
     setCheckoutResult(null);
 
     const response = await fetch("/api/orders", {
@@ -108,6 +132,9 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         paymentMethod,
+        expedition,
+        shippingName: recipientName,
+        shippingAddress: recipientAddress,
         items: lines.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -219,9 +246,41 @@ export function CartClient({ products }: { products: ProductSeed[] }) {
         ))}
       </div>
       <aside className="h-fit rounded-lg border border-white/70 bg-white/75 p-6 shadow-xl shadow-stone-900/10 backdrop-blur-xl">
-        <p className="text-sm uppercase tracking-[0.22em] text-stone-500">Secure payment</p>
-        <h2 className="mt-2 font-display text-3xl font-bold">Checkout</h2>
-        <div className="mt-5 grid gap-3">
+        <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.22em] text-stone-500">
+          <Truck size={17} />
+          Informasi pengiriman
+        </div>
+        <div className="mt-4 grid gap-3">
+          <label className="space-y-1">
+            <span className="text-xs font-semibold">Nama penerima</span>
+            <Input
+              placeholder="Nama lengkap"
+              value={recipientName}
+              onChange={(e) => setRecipientName(e.target.value)}
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-semibold">Alamat lengkap</span>
+            <Input
+              placeholder="Jl. Kemang Raya No. 10, Jakarta Selatan"
+              value={recipientAddress}
+              onChange={(e) => setRecipientAddress(e.target.value)}
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-semibold">Ekspedisi</span>
+            <Select value={expedition} onChange={(e) => setExpedition(e.target.value)}>
+              {expeditionOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </Select>
+          </label>
+        </div>
+
+        <div className="mt-6 border-t border-stone-200 pt-5">
+          <p className="text-sm uppercase tracking-[0.22em] text-stone-500">Metode pembayaran</p>
           {paymentOptions.map(({ id, label, detail, Icon, available }) => {
             const isActive = paymentMethod === id;
 

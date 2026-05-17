@@ -15,6 +15,9 @@ type AdminOrder = {
   paymentStatus: string;
   paymentReference: string;
   user: { name: string };
+  expedition?: string;
+  shippingName?: string;
+  shippingAddress?: string;
 };
 
 const orderStatuses = ["PENDING", "SHIPPED", "COMPLETED"] as const;
@@ -57,14 +60,22 @@ export function AdminOrderManager({ orders }: { orders: AdminOrder[] }) {
       {orders.slice(0, 8).map((order) => (
         <div key={order.id} className="rounded-lg bg-white/70 p-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
-            <div>
-              <p className="font-semibold">{order.id}</p>
+            <div className="flex-1">
+              <p className="font-semibold">{order.id.slice(0, 8)}...</p>
               <p className="text-sm text-stone-600">
                 {order.user.name} - {formatCurrency(order.totalPrice)}
               </p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9b5b24]">
-                {order.paymentMethod.replace("_", " ")} / {order.paymentStatus} / {order.paymentReference}
+              <p className="mt-1 text-xs text-stone-500">
+                {order.paymentMethod.replace("_", " ")} / {order.paymentStatus}
               </p>
+              {order.shippingName && (
+                <div className="mt-2 rounded-lg bg-stone-50/80 p-2 text-xs">
+                  <p className="font-semibold text-stone-700">Pengiriman:</p>
+                  <p className="text-stone-600">{order.shippingName}</p>
+                  <p className="text-stone-500">{order.shippingAddress}</p>
+                  <p className="mt-1 font-semibold text-[#9b5b24]">Ekspedisi: {order.expedition || "JNE"}</p>
+                </div>
+              )}
             </div>
             <span className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
               {order.status}

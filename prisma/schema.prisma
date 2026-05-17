@@ -127,6 +127,9 @@ model Order {
   paymentReference String      @default("")
   paymentStatus    String      @default("WAITING_PAYMENT")
   status           OrderStatus @default(PENDING)
+  expedition      String       @default("JNE")
+  shippingName     String       @default("")
+  shippingAddress  String       @default("")
   createdAt        DateTime    @default(now())
   items            OrderItem[]
 }
